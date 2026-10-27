@@ -45,7 +45,6 @@ let simulationMixer;
 let baseAction;
 let simulationAction;
 let animationPlaying = false;
-let animationTime = 0;
 let frameRequest;
 let savedCamera;
 let savedTarget;
@@ -567,9 +566,8 @@ function startRenderLoop(state) {
     const delta = Math.min(clock.getDelta(), 0.05);
     controls.update();
     if (animationPlaying) {
-      animationTime += delta;
-      baseMixer?.setTime(animationTime);
-      simulationMixer?.setTime(animationTime);
+      baseMixer?.update(delta);
+      simulationMixer?.update(delta);
     }
     renderComparison(state);
   };
@@ -604,7 +602,7 @@ async function startComparison() {
     fitSharedCamera(baseModel, simulationModel, camera);
     createMaterialVariants(baseModel);
     configureSynchronizedAnimation(baseGltf, simulationGltf);
-    if (baseAction && simulationAction) toggleComparisonAnimation();
+    if (baseAction && simulationAction) setComparisonAnimationPlaying(true);
     comparisonReady = true;
     comparisonLoading.hidden = true;
     setComparisonStatus("ALL THREE VIEWS READY");
@@ -616,7 +614,12 @@ async function startComparison() {
 
 function toggleComparisonAnimation() {
   if (!baseAction || !simulationAction) return;
-  animationPlaying = !animationPlaying;
+  setComparisonAnimationPlaying(!animationPlaying);
+}
+
+function setComparisonAnimationPlaying(playing) {
+  if (!baseAction || !simulationAction) return;
+  animationPlaying = playing;
   baseAction.paused = !animationPlaying;
   simulationAction.paused = !animationPlaying;
   comparisonPlay.textContent = animationPlaying ? "Ⅱ" : "▶";
@@ -751,6 +754,43 @@ function fitProjectModels(state, models, zoom = 1) {
   state.camera.updateProjectionMatrix();
   state.controls.target.set(0, 0, 0);
   state.controls.minDistance = radius * 0.75;
+  state.controls.maxDistance = radius * 8;
+  state.savedCamera = state.camera.position.clone();
+  state.savedTarget = state.controls.target.clone();
+  state.controls.update();
+}
+
+function fitProjectModelToViewport(state, model, screenFraction = 0.58) {
+  const bounds = centerProjectModel(model);
+  const center = bounds.getCenter(new THREE.Vector3());
+  const radius = Math.max(bounds.getBoundingSphere(new THREE.Sphere()).radius, 0.1);
+  const direction = new THREE.Vector3(-2.8, 1.25, 2.7).normalize();
+  const forward = direction.clone().negate();
+  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+  const up = new THREE.Vector3().crossVectors(right, forward).normalize();
+  const verticalHalfFov = THREE.MathUtils.degToRad(state.camera.fov * 0.5);
+  const horizontalHalfFov = Math.atan(Math.tan(verticalHalfFov) * Math.max(state.camera.aspect, 0.1));
+  let distance = 0;
+
+  for (let corner = 0; corner < 8; corner += 1) {
+    const point = new THREE.Vector3(
+      corner & 1 ? bounds.max.x : bounds.min.x,
+      corner & 2 ? bounds.max.y : bounds.min.y,
+      corner & 4 ? bounds.max.z : bounds.min.z,
+    ).sub(center);
+    const depthTowardCamera = point.dot(direction);
+    const verticalDistance = depthTowardCamera + Math.abs(point.dot(up)) / (screenFraction * Math.tan(verticalHalfFov));
+    const horizontalDistance = depthTowardCamera + Math.abs(point.dot(right)) / (screenFraction * Math.tan(horizontalHalfFov));
+    distance = Math.max(distance, verticalDistance, horizontalDistance);
+  }
+
+  distance = Math.max(distance, radius * 0.5);
+  state.camera.position.copy(center).addScaledVector(direction, distance);
+  state.camera.near = Math.max(radius / 1000, 0.01);
+  state.camera.far = Math.max(radius * 30, distance + radius * 2);
+  state.camera.updateProjectionMatrix();
+  state.controls.target.copy(center);
+  state.controls.minDistance = Math.min(radius * 0.75, distance * 0.8);
   state.controls.maxDistance = radius * 8;
   state.savedCamera = state.camera.position.clone();
   state.savedTarget = state.controls.target.clone();
@@ -1049,7 +1089,7 @@ async function startUavViewer() {
     root.add(gltf.scene);
     state.scene.add(root);
     state.roots = [root];
-    fitProjectModels(state, state.roots, 2.5);
+    fitProjectModelToViewport(state, root, 0.58);
     state.ready = true;
     loading.hidden = true;
     reset.disabled = false;
