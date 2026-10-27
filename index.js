@@ -1089,7 +1089,7 @@ async function startUavViewer() {
     root.add(gltf.scene);
     state.scene.add(root);
     state.roots = [root];
-    fitProjectModelToViewport(state, root, 0.58);
+    fitProjectModelToViewport(state, root, 0.9);
     state.ready = true;
     loading.hidden = true;
     reset.disabled = false;
