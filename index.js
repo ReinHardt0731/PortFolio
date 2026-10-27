@@ -1,9 +1,40 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
+
+const isMobileViewport = window.matchMedia("(max-width: 680px)").matches;
+const renderPixelRatio = Math.min(window.devicePixelRatio || 1, isMobileViewport ? 1 : 1.25);
+
+function createGLTFLoader() {
+  return new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
+}
+
+function loadingPercent(status) {
+  const match = String(status).match(/(\d{1,3})%/);
+  return match ? Number(match[1]) : null;
+}
+
+function updateLoadingProgress(progressElement, status) {
+  if (!progressElement) return;
+  const percent = loadingPercent(status);
+  progressElement.classList.toggle("is-indeterminate", percent === null);
+  if (percent === null) {
+    progressElement.removeAttribute("aria-valuenow");
+    progressElement.setAttribute("aria-valuetext", "Loading");
+    progressElement.style.removeProperty("--progress");
+    return;
+  }
+  const safePercent = THREE.MathUtils.clamp(percent, 0, 100);
+  progressElement.setAttribute("aria-valuenow", String(safePercent));
+  progressElement.removeAttribute("aria-valuetext");
+  progressElement.style.setProperty("--progress", `${safePercent}%`);
+}
 
 const landingGearCanvas = document.querySelector("#landing-gear-canvas");
 const landingGearLoading = document.querySelector("#landing-gear-loading");
+const landingGearLoadingText = document.querySelector("#landing-gear-loading-text");
+const landingGearProgress = document.querySelector("#landing-gear-progress");
 const landingGearError = document.querySelector("#landing-gear-error");
 const landingGearReset = document.querySelector("#landing-gear-reset");
 const landingGearDivider = document.querySelector("#landing-gear-divider");
@@ -28,6 +59,8 @@ const comparisonShell = document.querySelector(".comparison-shell");
 const comparisonStatus = document.querySelector("#comparison-status");
 const comparisonLoading = document.querySelector("#comparison-loading");
 const comparisonLoadingText = document.querySelector("#comparison-loading-text");
+const comparisonCadProgress = document.querySelector("#comparison-cad-progress");
+const comparisonSimulationProgress = document.querySelector("#comparison-simulation-progress");
 const comparisonError = document.querySelector("#comparison-error");
 const comparisonPlay = document.querySelector("#comparison-play");
 const comparisonHome = document.querySelector("#comparison-home");
@@ -50,6 +83,11 @@ let savedCamera;
 let savedTarget;
 let resizeObserver;
 let intersectionObserver;
+let comparisonVisibilityObserver;
+let comparisonNearViewport = false;
+let comparisonControlSettleUntil = 0;
+let lastComparisonFrame = 0;
+let comparisonFrameInProgress = false;
 let renderTargets = [];
 let comparisonStarted = false;
 let comparisonReady = false;
@@ -97,10 +135,10 @@ async function startLandingGearViewer() {
     landingGearRenderer = new THREE.WebGLRenderer({
       canvas: landingGearCanvas,
       alpha: false,
-      antialias: true,
+      antialias: !isMobileViewport,
       powerPreference: "high-performance",
     });
-    landingGearRenderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    landingGearRenderer.setPixelRatio(renderPixelRatio);
     landingGearRenderer.outputColorSpace = THREE.SRGBColorSpace;
     landingGearRenderer.toneMapping = THREE.ACESFilmicToneMapping;
     landingGearRenderer.toneMappingExposure = 1.1;
@@ -158,9 +196,11 @@ async function startLandingGearViewer() {
     landingGearResizeObserver.observe(landingGearCanvas.parentElement);
     resizeLandingGear();
 
-    const gltf = await new GLTFLoader().loadAsync("./assets/Landing_Gear.glb", (event) => {
+    const gltf = await createGLTFLoader().loadAsync("./assets/Landing_Gear.glb", (event) => {
       if (event.lengthComputable && event.total > 0) {
-        landingGearLoading.textContent = `Loading landing gear model… ${Math.round((event.loaded / event.total) * 100)}%`;
+        const status = `Loading landing gear model… ${Math.round((event.loaded / event.total) * 100)}%`;
+        landingGearLoadingText.textContent = status;
+        updateLoadingProgress(landingGearProgress, status);
       }
     });
     const modelRoot = new THREE.Group();
@@ -260,6 +300,7 @@ function moveDivider(index, nextPosition) {
     dividerPositions[1] = THREE.MathUtils.clamp(nextPosition, dividerPositions[0] + COMPARISON_GAP, limits.max);
   }
   syncDividerUI();
+  scheduleComparisonFrame();
 }
 
 function installDividerControls() {
@@ -321,10 +362,10 @@ function createComparisonRenderer() {
   renderer = new THREE.WebGLRenderer({
     canvas: comparisonCanvas,
     alpha: false,
-    antialias: true,
+    antialias: !isMobileViewport,
     powerPreference: "high-performance",
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.4));
+  renderer.setPixelRatio(renderPixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
@@ -353,6 +394,13 @@ function createComparisonRenderer() {
   controls.autoRotateSpeed = 0.55;
   controls.minPolarAngle = 0.18;
   controls.maxPolarAngle = Math.PI * 0.83;
+  controls.addEventListener("change", () => {
+    comparisonControlSettleUntil = performance.now() + 220;
+    if (!comparisonFrameInProgress && !animationPlaying && comparisonReady) {
+      renderComparison(comparisonState);
+    }
+    scheduleComparisonFrame();
+  });
 
   const targetOptions = {
     minFilter: THREE.LinearFilter,
@@ -426,6 +474,7 @@ function createComparisonRenderer() {
     renderTargets.forEach((target) => target.setSize(drawingBufferSize.x, drawingBufferSize.y));
     compositeMaterial.uniforms.uResolution.value.copy(drawingBufferSize);
     syncDividerUI();
+    scheduleComparisonFrame();
   };
   resizeObserver = new ResizeObserver(resize);
   resizeObserver.observe(comparisonViewer);
@@ -560,18 +609,36 @@ function configureSynchronizedAnimation(baseGltf, simulationGltf) {
   comparisonPlay.disabled = false;
 }
 
-function startRenderLoop(state) {
-  const frame = () => {
-    frameRequest = requestAnimationFrame(frame);
-    const delta = Math.min(clock.getDelta(), 0.05);
-    controls.update();
-    if (animationPlaying) {
-      baseMixer?.update(delta);
-      simulationMixer?.update(delta);
-    }
-    renderComparison(state);
-  };
-  frameRequest = requestAnimationFrame(frame);
+function scheduleComparisonFrame() {
+  if (frameRequest || !comparisonReady || !comparisonNearViewport || document.hidden) return;
+  frameRequest = requestAnimationFrame(renderComparisonFrame);
+}
+
+function renderComparisonFrame(timestamp) {
+  frameRequest = 0;
+  if (!comparisonReady || !comparisonNearViewport || document.hidden) return;
+
+  if (animationPlaying && isMobileViewport && timestamp - lastComparisonFrame < 1000 / 30) {
+    scheduleComparisonFrame();
+    return;
+  }
+
+  const delta = Math.min(clock.getDelta(), 0.05);
+  comparisonFrameInProgress = true;
+  controls.update();
+  comparisonFrameInProgress = false;
+  if (animationPlaying) {
+    baseMixer?.update(delta);
+    simulationMixer?.update(delta);
+  }
+  renderComparison(comparisonState);
+  lastComparisonFrame = timestamp;
+
+  if (animationPlaying || performance.now() < comparisonControlSettleUntil) scheduleComparisonFrame();
+}
+
+function startRenderLoop() {
+  scheduleComparisonFrame();
 }
 
 async function startComparison() {
@@ -579,14 +646,15 @@ async function startComparison() {
   comparisonStarted = true;
   try {
     comparisonState = createComparisonRenderer();
-    const loader = new GLTFLoader();
+    const loader = createGLTFLoader();
     setComparisonStatus("LOADING MODELS");
     comparisonLoading.hidden = false;
     comparisonError.hidden = true;
-    const modelProgress = { CAD: "waiting", simulation: "waiting" };
+    const modelProgress = { CAD: "queued", simulation: "queued" };
     const updateModelProgress = (label, status) => {
       modelProgress[label] = status;
       comparisonLoadingText.textContent = `CAD ${modelProgress.CAD}  /  SIMULATION ${modelProgress.simulation}`;
+      updateLoadingProgress(label === "CAD" ? comparisonCadProgress : comparisonSimulationProgress, status);
     };
     updateModelProgress("CAD", "queued");
     updateModelProgress("simulation", "queued");
@@ -622,9 +690,12 @@ function setComparisonAnimationPlaying(playing) {
   animationPlaying = playing;
   baseAction.paused = !animationPlaying;
   simulationAction.paused = !animationPlaying;
+  comparisonControlSettleUntil = playing ? 0 : performance.now() + 220;
   comparisonPlay.textContent = animationPlaying ? "Ⅱ" : "▶";
   comparisonPlay.setAttribute("aria-label", animationPlaying ? "Pause synchronized propeller animation" : "Play synchronized propeller animation");
   comparisonPlay.title = animationPlaying ? "Pause animation" : "Play animation";
+  if (!animationPlaying && comparisonReady) renderComparison(comparisonState);
+  scheduleComparisonFrame();
 }
 
 function resetComparisonCamera() {
@@ -637,6 +708,7 @@ function resetComparisonCamera() {
 function disposeComparison() {
   if (frameRequest) cancelAnimationFrame(frameRequest);
   if (intersectionObserver) intersectionObserver.disconnect();
+  if (comparisonVisibilityObserver) comparisonVisibilityObserver.disconnect();
   if (resizeObserver) resizeObserver.disconnect();
   landingGearResizeObserver?.disconnect();
   landingGearControls?.dispose();
@@ -656,7 +728,19 @@ if ("IntersectionObserver" in window) {
     }
   }, { rootMargin: "360px 0px" });
   intersectionObserver.observe(comparisonShell);
+  comparisonVisibilityObserver = new IntersectionObserver((entries) => {
+    comparisonNearViewport = Boolean(entries[0]?.isIntersecting);
+    if (comparisonNearViewport) {
+      scheduleComparisonFrame();
+    } else if (frameRequest) {
+      cancelAnimationFrame(frameRequest);
+      frameRequest = 0;
+      lastComparisonFrame = 0;
+    }
+  });
+  comparisonVisibilityObserver.observe(comparisonShell);
 } else {
+  comparisonNearViewport = true;
   startComparison();
 }
 
@@ -682,10 +766,10 @@ function createProjectViewport(canvas, viewer, render, { transparent = false } =
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: transparent,
-    antialias: true,
+    antialias: !isMobileViewport,
     powerPreference: "high-performance",
   });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.setPixelRatio(renderPixelRatio);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.08;
@@ -890,6 +974,8 @@ async function startPropellerViewer() {
   const viewer = document.querySelector("#propeller-viewer");
   const canvas = document.querySelector("#propeller-canvas");
   const loading = document.querySelector("#propeller-loading");
+  const loadingText = document.querySelector("#propeller-loading-text");
+  const progressBar = document.querySelector("#propeller-progress");
   const error = document.querySelector("#propeller-error");
   const divider = document.querySelector("#propeller-divider");
   const reset = document.querySelector("#propeller-reset");
@@ -917,11 +1003,14 @@ async function startPropellerViewer() {
     const updateProgress = (label) => {
       const key = label.startsWith("CV") ? "CV" : "TV";
       progress[key] = label;
-      loading.textContent = `${progress.CV}  /  ${progress.TV}`;
+      loadingText.textContent = `${progress.CV}  /  ${progress.TV}`;
+      const cvPercent = loadingPercent(progress.CV) ?? 0;
+      const tvPercent = loadingPercent(progress.TV) ?? 0;
+      updateLoadingProgress(progressBar, `${Math.round((cvPercent + tvPercent) / 2)}%`);
     };
     loading.hidden = false;
     error.hidden = true;
-    const loader = new GLTFLoader();
+    const loader = createGLTFLoader();
     const [cvGltf, tvGltf] = await Promise.all([
       loadProjectModel(loader, "./assets/other_projects/Propeller%20Study/CV.glb", "CV", updateProgress),
       loadProjectModel(loader, "./assets/other_projects/Propeller%20Study/TV.glb", "TV", updateProgress),
@@ -1003,6 +1092,8 @@ async function startAircraftViewer() {
   const viewer = document.querySelector("#aircraft-stage");
   const canvas = document.querySelector("#aircraft-canvas");
   const loading = document.querySelector("#aircraft-loading");
+  const loadingText = document.querySelector("#aircraft-loading-text");
+  const progressBar = document.querySelector("#aircraft-progress");
   const error = document.querySelector("#aircraft-error");
   const play = document.querySelector("#aircraft-play");
   let state;
@@ -1010,8 +1101,9 @@ async function startAircraftViewer() {
     state = createProjectViewport(canvas, viewer, renderSingleProjectModel, { transparent: true });
     loading.hidden = false;
     error.hidden = true;
-    const gltf = await loadProjectModel(new GLTFLoader(), "./assets/other_projects/animated_aircraft.glb", "Aircraft", (status) => {
-      loading.textContent = `${status}...`;
+    const gltf = await loadProjectModel(createGLTFLoader(), "./assets/other_projects/animated_aircraft.glb", "Aircraft", (status) => {
+      loadingText.textContent = `${status}...`;
+      updateLoadingProgress(progressBar, status);
     });
     const root = new THREE.Group();
     root.add(gltf.scene);
@@ -1064,8 +1156,15 @@ function observeAircraftViewer(element) {
 
 document.querySelector("#aircraft-play").addEventListener("click", () => setAircraftAnimationPaused(!aircraftAnimationPaused));
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) stopAircraftAnimationLoop();
-  else startAircraftAnimationLoop();
+  if (document.hidden) {
+    stopAircraftAnimationLoop();
+    if (frameRequest) cancelAnimationFrame(frameRequest);
+    frameRequest = 0;
+    lastComparisonFrame = 0;
+  } else {
+    startAircraftAnimationLoop();
+    scheduleComparisonFrame();
+  }
 });
 
 async function startUavViewer() {
@@ -1074,6 +1173,8 @@ async function startUavViewer() {
   const viewer = document.querySelector("#uav-viewer");
   const canvas = document.querySelector("#uav-canvas");
   const loading = document.querySelector("#uav-loading");
+  const loadingText = document.querySelector("#uav-loading-text");
+  const progressBar = document.querySelector("#uav-progress");
   const error = document.querySelector("#uav-error");
   const reset = document.querySelector("#uav-reset");
   let state;
@@ -1082,8 +1183,9 @@ async function startUavViewer() {
     loading.hidden = false;
     error.hidden = true;
     reset.disabled = true;
-    const gltf = await loadProjectModel(new GLTFLoader(), "./assets/other_projects/UAV/Drone.glb", "UAV", (status) => {
-      loading.textContent = `${status}...`;
+    const gltf = await loadProjectModel(createGLTFLoader(), "./assets/other_projects/UAV/Drone.glb", "UAV", (status) => {
+      loadingText.textContent = `${status}...`;
+      updateLoadingProgress(progressBar, status);
     });
     const root = new THREE.Group();
     root.add(gltf.scene);

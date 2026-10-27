@@ -99,6 +99,16 @@ h1, h2, h3, p { margin-top: 0; }
 
 .live-dot { width: 5px; height: 5px; }
 .loader-ring { width: 16px; height: 16px; border-radius: 50%; border: 1px solid rgba(211, 239, 102, .25); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+.viewer-loading-progress { width: min(260px, 100%); height: 3px; display: block; overflow: hidden; border-radius: 99px; background: rgba(199, 217, 239, .2); }
+.viewer-loading-progress > span { width: var(--progress, 0%); height: 100%; display: block; background: var(--accent); transition: width .2s ease; }
+.viewer-loading-progress.is-indeterminate > span { width: 34%; animation: loading-progress 1.15s ease-in-out infinite; }
+.viewer-loading-stack, .comparison-loading-stack { width: min(280px, 100%); display: grid; justify-items: center; gap: 11px; }
+.comparison-loading-stack { width: min(340px, 100%); }
+.comparison-loading-copy { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.comparison-progress-pair { width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px; color: #99a7b9; font: 7px var(--mono); letter-spacing: .06em; text-align: left; }
+.comparison-progress-pair > span { min-width: 0; display: grid; gap: 5px; }
+.comparison-progress-pair .viewer-loading-progress { width: 100%; }
+@keyframes loading-progress { from { transform: translateX(-115%); } to { transform: translateX(300%); } }
 @keyframes spin { to { transform: rotate(360deg); } }
 .viewer-controls { display: flex; gap: 7px; }
 .icon-button { width: 31px; height: 31px; display: grid; place-items: center; border: 1px solid rgba(215, 228, 245, .27); background: rgba(14, 23, 37, .78); color: #dce4ed; cursor: pointer; font-size: 13px; }
@@ -261,6 +271,8 @@ h1, h2, h3, p { margin-top: 0; }
 .project-model-label-left { left: 12px; }
 .project-model-label-right { right: 12px; }
 .project-model-message { position: absolute; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; padding: 24px; background: rgba(13, 21, 33, .76); color: #b8c5d5; font: 9px/1.7 var(--mono); letter-spacing: .04em; text-align: center; }
+#propeller-loading, #uav-loading { flex-direction: column; }
+#propeller-loading .viewer-loading-progress, #uav-loading .viewer-loading-progress { margin-top: 3px; }
 .project-model-error { color: #ffd4b0; }
 .project-model-error a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .project-divider { position: absolute; inset-block: 0; left: 50%; z-index: 3; width: 44px; padding: 0; border: 0; background: transparent; transform: translateX(-50%); cursor: ew-resize; touch-action: none; }
@@ -336,7 +348,8 @@ h1, h2, h3, p { margin-top: 0; }
 .aircraft-stage-topline { position: absolute; inset: 15px 17px auto; z-index: 1; display: flex; justify-content: space-between; color: #aab6c6; font: 8px var(--mono); letter-spacing: .1em; pointer-events: none; }
 .aircraft-stage-topline > span:first-child { display: flex; align-items: center; gap: 8px; }
 .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px rgba(211, 239, 102, .7); }
-.aircraft-stage-message { position: absolute; inset: 50% auto auto 50%; z-index: 2; transform: translate(-50%, -50%); max-width: calc(100% - 36px); color: #c2ccd7; font: 10px var(--mono); text-align: center; }
+.aircraft-stage-message { width: min(300px, calc(100% - 36px)); position: absolute; inset: 50% auto auto 50%; z-index: 2; display: grid; justify-items: center; gap: 10px; transform: translate(-50%, -50%); color: #c2ccd7; font: 10px var(--mono); text-align: center; }
+.aircraft-stage-message .viewer-loading-progress { width: 100%; }
 .aircraft-stage-error { color: #f1c6a2; }
 .aircraft-stage-error a { display: inline-block; margin-top: 10px; color: var(--accent); text-underline-offset: 4px; }
 .aircraft-play { position: absolute; right: 16px; bottom: 16px; z-index: 2; min-height: 36px; padding: 0 12px; border: 1px solid rgba(211, 239, 102, .5); background: rgba(8, 17, 28, .8); color: var(--accent); font: 8px var(--mono); letter-spacing: .07em; cursor: pointer; }
