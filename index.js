@@ -604,6 +604,7 @@ async function startComparison() {
     fitSharedCamera(baseModel, simulationModel, camera);
     createMaterialVariants(baseModel);
     configureSynchronizedAnimation(baseGltf, simulationGltf);
+    if (baseAction && simulationAction) toggleComparisonAnimation();
     comparisonReady = true;
     comparisonLoading.hidden = true;
     setComparisonStatus("ALL THREE VIEWS READY");
@@ -1048,7 +1049,7 @@ async function startUavViewer() {
     root.add(gltf.scene);
     state.scene.add(root);
     state.roots = [root];
-    fitProjectModels(state, state.roots);
+    fitProjectModels(state, state.roots, 2.5);
     state.ready = true;
     loading.hidden = true;
     reset.disabled = false;
