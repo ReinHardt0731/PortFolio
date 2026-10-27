@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 150" role="img" aria-labelledby="title">
+  <title id="title">XFLR5 wordmark</title>
+  <defs>
+    <linearGradient id="five" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#62616a"/>
+      <stop offset="1" stop-color="#d7d6e4"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="2"/>
+      <feOffset dy="2"/>
+      <feComponentTransfer><feFuncA type="linear" slope=".25"/></feComponentTransfer>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)" font-family="Arial, Helvetica, sans-serif" font-weight="700" paint-order="stroke fill">
+    <text x="8" y="124" fill="#fff" stroke="#444" stroke-linejoin="round" stroke-width="3" font-size="112" letter-spacing="-7">xflr</text>
+    <text x="249" y="124" fill="url(#five)" stroke="#444" stroke-linejoin="round" stroke-width="3" font-size="136" letter-spacing="-8">5</text>
+  </g>
+</svg>

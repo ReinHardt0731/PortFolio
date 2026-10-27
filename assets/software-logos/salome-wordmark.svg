@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 342 64" role="img" aria-labelledby="title">
+  <title id="title">SALOME wordmark</title>
+  <g fill="#050505">
+    <path d="M45 9H11C5 9 2 13 2 19v4c0 6 4 10 10 10h25v6H2v10h36c7 0 10-4 10-10v-6c0-6-4-10-10-10H13v-4h32z"/>
+    <path fill-rule="evenodd" d="M56 49V19c0-6 4-10 10-10h29c6 0 10 4 10 10v30H93V37H68v12zm12-23h25V20H68z"/>
+    <path d="M116 9h12v30h35v10h-47z"/>
+    <path fill-rule="evenodd" d="M172 19c0-6 4-10 10-10h32c6 0 10 4 10 10v20c0 6-4 10-10 10h-32c-6 0-10-4-10-10zm12 1v18h28V20z"/>
+    <path d="M234 49V9h13l17 16 17-16h13v40h-12V25l-18 17-18-17v24z"/>
+    <path d="M305 9h35v10h-23v6h21v9h-21v5h23v10h-35z"/>
+  </g>
+</svg>

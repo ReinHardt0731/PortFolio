@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#111a2a" />
     <meta name="description" content="A CAD portfolio featuring 3D models, technical drawings, and digital projects." />
+    <script>
+      if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+      window.addEventListener("pageshow", (event) => {
+        if (!event.persisted && !location.hash) window.scrollTo(0, 0);
+      });
+    </script>
     <title>Reinhardt — CAD Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -27,9 +33,9 @@
       <nav class="main-nav" aria-label="Main navigation">
         <a href="#work">Selected work</a>
         <a href="#teaching">Teaching</a>
-        <a href="#about">About</a>
+        <a href="#other-projects">Other projects</a>
       </nav>
-      <a class="header-link" href="https://reinhardt0731.github.io/reinhardt.fulcrum/" target="_blank" rel="noreferrer">Digital project <span aria-hidden="true">↗</span></a>
+      <a class="header-link" href="https://reinhardt0731.github.io/reinhardt.fulcrum/" target="_blank" rel="noreferrer">Fulcrum project <span aria-hidden="true">↗</span></a>
     </header>
 
     <main id="top">
@@ -40,12 +46,14 @@
           <p class="hero-lede">A collection of CAD models, technical drawings, and digital projects—presented with the process behind the final form.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="#work">Explore the work <span aria-hidden="true">↓</span></a>
-            <a class="text-link" href="#teaching">Teaching approach <span aria-hidden="true">↗</span></a>
           </div>
         </div>
         <div class="hero-visual" aria-label="Interactive landing gear model">
           <div class="hero-model-frame">
             <canvas id="landing-gear-canvas" aria-label="Interactive 3D model of a landing gear. Drag to orbit, scroll or pinch to zoom, and right-drag to pan."></canvas>
+            <div class="landing-gear-mode landing-gear-mode-left" aria-hidden="true">SHADED</div>
+            <div class="landing-gear-mode landing-gear-mode-right" aria-hidden="true">MESH</div>
+            <button id="landing-gear-divider" class="landing-gear-divider" type="button" role="slider" aria-label="Move divider between shaded and mesh views" aria-orientation="horizontal" aria-valuemin="20" aria-valuemax="80" aria-valuenow="50" title="Drag or use arrow keys to move divider"><span></span></button>
             <div id="landing-gear-loading" class="hero-model-message" role="status" aria-live="polite">Loading landing gear model…</div>
             <div id="landing-gear-error" class="hero-model-message hero-model-error" role="alert" hidden>Landing gear preview unavailable. <a href="./assets/Landing_Gear.glb" download>Download the GLB model.</a></div>
             <button id="landing-gear-reset" class="hero-model-reset" type="button" aria-label="Reset landing gear view" title="Reset view">RESET VIEW</button>
@@ -80,8 +88,8 @@
               <div class="comparison-corner" aria-hidden="true">GANNET XT0731<br />CAMERA / SHARED</div>
             </div>
             <div class="comparison-legend" aria-label="Comparison render modes">
-              <div><span class="legend-index">01</span><span><b>SHADED</b><small>Original CAD materials</small></span></div>
-              <div><span class="legend-index">02</span><span><b>MESH</b><small>Flat surface + triangulation</small></span></div>
+              <div><span class="legend-index">01</span><span><b>SHADED</b><small>3D modeling - Parametric CAD</small></span></div>
+              <div><span class="legend-index">02</span><span><b>MESH</b><small>Meshing</small></span></div>
               <div><span class="legend-index">03</span><span><b>SIMULATION</b><small>Simulation model data</small></span></div>
             </div>
             <div class="comparison-toolbar">
@@ -96,43 +104,175 @@
         </article>
 
         <div id="drawings" class="drawings-heading"><div><p class="eyebrow">TECHNICAL DRAWINGS</p><h3>One model. Multiple views.</h3></div><span class="drawings-count">13 SHEETS <span class="count-rule"></span> PDF</span></div>
-        <div id="drawing-grid" class="drawing-grid">
-          <button class="drawing-card" data-pdf="./assets/CAD_GAN_3D.pdf" data-title="Gannet — 3D view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_3D.png" alt="Isometric technical drawing of the Gannet XT0731 aircraft with a detailed wing-tip view" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>01 / 13</span><b>3D view</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/CAD_GAN_FrontView.pdf" data-title="Gannet — Front view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_FrontView.png" alt="Dimensioned front elevation drawing of the Gannet aircraft" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>02 / 13</span><b>Front view</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/CAD_GAN_SideView.pdf" data-title="Gannet — Side view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_SideView.png" alt="Dimensioned side elevation drawing of the Gannet aircraft" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>03 / 13</span><b>Side view</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/CAD_GAN_TopView.pdf" data-title="Gannet — Top view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_TopView.png" alt="Dimensioned top plan drawing of the Gannet aircraft" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>04 / 13</span><b>Top view</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card drawing-card-alt" data-pdf="./assets/CAD2.pdf" data-title="CAD study — drawing sheet" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD2.png" alt="Exploded and assembled technical drawing of a landing gear mechanism" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>05 / 13</span><b>CAD study</b><span class="file-type">PDF</span></span></button>
-
-          <button class="drawing-card" data-pdf="./assets/Excercise1.pdf" data-title="Exercise 1 &mdash; Pulley flange" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise1.png" alt="Dimensioned pulley flange drawing with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>06 / 13</span><b>Exercise 1</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise2.pdf" data-title="Exercise 2" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise2.png" alt="Dimensioned circular component drawing with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>07 / 13</span><b>Exercise 2</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise3_1.pdf" data-title="Exercise 3.1 &mdash; Cross sections" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise3_1.png" alt="Dimensioned cross-section drawing with labeled sections" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>08 / 13</span><b>Exercise 3.1</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise3_2.pdf" data-title="Exercise 3.2 &mdash; Detail views" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise3_2.png" alt="Dimensioned part drawing with detail and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>09 / 13</span><b>Exercise 3.2</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise4_1.pdf" data-title="Exercise 4.1" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise4_1.png" alt="Dimensioned circular component drawing with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>10 / 13</span><b>Exercise 4.1</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise4_2.pdf" data-title="Exercise 4.2" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise4_2.png" alt="Dimensioned component drawing with profile and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>11 / 13</span><b>Exercise 4.2</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise5_Leg.pdf" data-title="Exercise 5 &mdash; Leg" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise5_Leg.png" alt="Dimensioned landing-leg component with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>12 / 13</span><b>Exercise 5 &mdash; Leg</b><span class="file-type">PDF</span></span></button>
-          <button class="drawing-card" data-pdf="./assets/Excercise5_TableTop.pdf" data-title="Exercise 5 &mdash; Tabletop" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise5_TableTop.png" alt="Dimensioned tabletop panel drawing with top, side, and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>13 / 13</span><b>Exercise 5 &mdash; Tabletop</b><span class="file-type">PDF</span></span></button>
-        </div>
+        <section class="drawing-group" aria-labelledby="aircraft-drawings-title">
+          <div class="drawing-group-heading"><div><p class="eyebrow">01 / AIRCRAFT / GANNET XT0731</p><h4 id="aircraft-drawings-title">Four views of one airframe.</h4></div><p>Assembly, elevation, and plan sheets</p></div>
+          <div id="drawing-grid" class="drawing-gallery aircraft-gallery">
+            <button class="drawing-card drawing-card-featured" data-pdf="./assets/CAD_GAN_3D.pdf" data-title="Gannet — 3D view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_3D.png" alt="Isometric technical drawing of the Gannet XT0731 aircraft with a detailed wing-tip view" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>01 / 13</span><b>3D assembly view</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/CAD_GAN_FrontView.pdf" data-title="Gannet — Front view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_FrontView.png" alt="Dimensioned front elevation drawing of the Gannet aircraft" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>02 / 13</span><b>Front view</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/CAD_GAN_SideView.pdf" data-title="Gannet — Side view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_SideView.png" alt="Dimensioned side elevation drawing of the Gannet aircraft" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>03 / 13</span><b>Side view</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/CAD_GAN_TopView.pdf" data-title="Gannet — Top view" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD_GAN_TopView.png" alt="Dimensioned top plan drawing of the Gannet aircraft" width="1280" height="853" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>04 / 13</span><b>Top view</b><span class="file-type">PDF</span></span></button>
+          </div>
+        </section>
+        <section class="drawing-group gear-drawing-group" aria-labelledby="gear-drawing-title">
+          <div class="drawing-group-heading"><div><p class="eyebrow">02 / MECHANISM STUDY</p><h4 id="gear-drawing-title">Landing gear, in detail.</h4></div><p>Exploded and assembled views</p></div>
+            <button class="drawing-card drawing-card-featured gear-feature-card" data-pdf="./assets/CAD2.pdf" data-title="CAD study — drawing sheet" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD2.png" alt="Exploded and assembled technical drawing of a landing gear mechanism" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>05 / 13</span><b>Landing gear CAD study</b><span class="file-type">PDF</span></span></button>
+        </section>
+        <section class="drawing-group exercise-drawing-group" aria-labelledby="exercise-drawings-title">
+          <div class="drawing-group-heading"><div><p class="eyebrow">03 / PART STUDIES</p><h4 id="exercise-drawings-title">Practice in precision.</h4></div><p>Dimensioned component drawings</p></div>
+          <div class="drawing-gallery exercise-gallery">
+            <button class="drawing-card" data-pdf="./assets/Excercise1.pdf" data-title="Exercise 1 &mdash; Pulley flange" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise1.png" alt="Dimensioned pulley flange drawing with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>06 / 13</span><b>Exercise 1</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise2.pdf" data-title="Exercise 2" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise2.png" alt="Dimensioned circular component drawing with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>07 / 13</span><b>Exercise 2</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise3_1.pdf" data-title="Exercise 3.1 &mdash; Cross sections" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise3_1.png" alt="Dimensioned cross-section drawing with labeled sections" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>08 / 13</span><b>Exercise 3.1</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise3_2.pdf" data-title="Exercise 3.2 &mdash; Detail views" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise3_2.png" alt="Dimensioned part drawing with detail and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>09 / 13</span><b>Exercise 3.2</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise4_1.pdf" data-title="Exercise 4.1" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise4_1.png" alt="Dimensioned circular component drawing with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>10 / 13</span><b>Exercise 4.1</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise4_2.pdf" data-title="Exercise 4.2" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise4_2.png" alt="Dimensioned component drawing with profile and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>11 / 13</span><b>Exercise 4.2</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise5_Leg.pdf" data-title="Exercise 5 &mdash; Leg" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise5_Leg.png" alt="Dimensioned landing-leg component with orthographic and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>12 / 13</span><b>Exercise 5 &mdash; Leg</b><span class="file-type">PDF</span></span></button>
+            <button class="drawing-card" data-pdf="./assets/Excercise5_TableTop.pdf" data-title="Exercise 5 &mdash; Tabletop" type="button"><span class="drawing-preview"><img src="./assets/previews/Excercise5_TableTop.png" alt="Dimensioned tabletop panel drawing with top, side, and isometric views" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET &rarr;</span></span><span class="drawing-label"><span>13 / 13</span><b>Exercise 5 &mdash; Tabletop</b><span class="file-type">PDF</span></span></button>
+          </div>
+        </section>
       </section>
 
       <section id="teaching" class="teaching-section">
         <div class="section-wrap teaching-inner">
-          <div class="teaching-mark" aria-hidden="true"><span>✳</span><small>FROM<br />MODEL<br />TO METHOD</small></div>
-          <div class="teaching-copy"><p class="eyebrow">02 — TEACHING WITH CAD</p><h2>Good design is<br />clear at every <span>step.</span></h2><p>CAD is more than a finished shape. It is a way to think through dimensions, relationships, and the choices behind a design. This portfolio is built to make both the result and the reasoning visible.</p></div>
-          <div class="teaching-points"><div><span>01</span><p><b>See the form</b><small>Explore a model in 3D, from every angle.</small></p></div><div><span>02</span><p><b>Read the drawing</b><small>Connect a solid model to its technical views.</small></p></div><div><span>03</span><p><b>Understand the process</b><small>Use projects to make design decisions explainable.</small></p></div></div>
+          <div class="teaching-copy"><p class="eyebrow">02 — DESIGN WORKFLOW</p><h2>Good design is<br />clear at every <span>step.</span></h2><p>This portfolio follows a practical engineering workflow: build aircraft geometry, evaluate aerodynamic performance, and communicate results clearly. The tools shown here support each stage, from 3D modeling and simulation to technical documents and organized data.</p></div>
+          <div class="software-groups" role="group" aria-label="Design, engineering, and productivity software">
+            <section class="software-group" aria-labelledby="software-cad-title">
+              <h3 id="software-cad-title" class="software-group-title">CAD &amp; MODELING</h3>
+              <div class="software-group-cards">
+                <a class="software-card" href="https://www.blender.org/" target="_blank" rel="noopener noreferrer" aria-label="Blender website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/blender.png" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><span class="software-name">Blender</span></a>
+                <a class="software-card" href="https://www.freecad.org/" target="_blank" rel="noopener noreferrer" aria-label="FreeCAD website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/freecad.svg" alt="" width="1800" height="480" loading="lazy" decoding="async"></span><span class="software-name">FreeCAD</span></a>
+                <a class="software-card" href="https://www.solidworks.com/" target="_blank" rel="noopener noreferrer" aria-label="SOLIDWORKS website, opens in a new tab"><span class="software-logo-frame software-wordmark">SOLIDWORKS</span><span class="software-name">SOLIDWORKS</span></a>
+                <a class="software-card" href="https://openvsp.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenVSP website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/openvsp.png" alt="" width="850" height="253" loading="lazy" decoding="async"></span><span class="software-name">OpenVSP</span></a>
+              </div>
+            </section>
+            <section class="software-group" aria-labelledby="software-analysis-title">
+              <h3 id="software-analysis-title" class="software-group-title">ANALYSIS &amp; SIMULATION</h3>
+              <div class="software-group-cards">
+                <a class="software-card" href="https://www.python.org/" target="_blank" rel="noopener noreferrer" aria-label="Python website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/python.svg" alt="" width="553" height="164" loading="lazy" decoding="async"></span><span class="software-name">Python</span></a>
+                <a class="software-card" href="https://openfoam.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenFOAM website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/openfoam.svg" alt="" width="496" height="177" loading="lazy" decoding="async"></span><span class="software-name">OpenFOAM</span></a>
+                <a class="software-card" href="https://www.xflr5.tech/xflr5.html" target="_blank" rel="noopener noreferrer" aria-label="XFLR5 website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/xflr5-wordmark.svg" alt="" width="360" height="150" loading="lazy" decoding="async"></span><span class="software-name">XFLR5</span></a>
+                <a class="software-card" href="https://www.salome-platform.org/" target="_blank" rel="noopener noreferrer" aria-label="SALOME website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/salome-wordmark.svg" alt="" width="340" height="64" loading="lazy" decoding="async"></span><span class="software-name">SALOME</span></a>
+              </div>
+            </section>
+            <section class="software-group" aria-labelledby="software-productivity-title">
+              <h3 id="software-productivity-title" class="software-group-title">DOCUMENTATION &amp; DATA</h3>
+              <div class="software-group-cards">
+                <a class="software-card" href="https://www.microsoft.com/microsoft-365/word" target="_blank" rel="noopener noreferrer" aria-label="Microsoft Word website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/microsoft-word.svg" alt="" width="35" height="36" loading="lazy" decoding="async"></span><span class="software-name">Microsoft Word</span></a>
+                <a class="software-card" href="https://www.microsoft.com/microsoft-365/excel" target="_blank" rel="noopener noreferrer" aria-label="Microsoft Excel website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/microsoft-excel.svg" alt="" width="35" height="36" loading="lazy" decoding="async"></span><span class="software-name">Microsoft Excel</span></a>
+              </div>
+            </section>
+          </div>
         </div>
       </section>
 
-      <section id="about" class="project-section section-wrap">
+      <section id="other-projects" class="project-section other-projects-section section-wrap" aria-labelledby="other-projects-title">
         <div class="section-heading project-heading">
-          <div><p class="eyebrow">03 — DIGITAL PROJECT</p><h2>Built for the <span>browser.</span></h2></div>
-          <p class="section-note">A website project, available as a live preview or in its own tab.</p>
+          <div><p class="eyebrow">03 &mdash; OTHER PROJECTS</p><h2 id="other-projects-title">Ideas in <span>motion.</span></h2></div>
+          <p class="section-note">A collection of aerodynamic studies, aircraft concepts, UAV design, and digital work.</p>
         </div>
-        <article class="web-project">
-          <div class="web-project-art" aria-hidden="true"><div class="browser-window"><div class="browser-bar"><i></i><i></i><i></i><span>REINHARDT / FULCRUM</span></div><div class="browser-content"><b>FULCRUM</b><span>BUILD · SHAPE · REFINE</span><div class="browser-slab"></div></div></div><span class="web-stamp">WEB<br />PROJECT<br /><b>02</b></span></div>
-          <div class="web-project-info"><p class="eyebrow">LIVE SITE / PERSONAL PROJECT</p><h3>Fulcrum</h3><p>Explore the website project in the embedded preview, or open the live site in a separate tab.</p><div class="web-actions"><button id="open-fulcrum" class="button button-primary" type="button">Preview site <span aria-hidden="true">↗</span></button><a class="text-link" href="https://reinhardt0731.github.io/reinhardt.fulcrum/" target="_blank" rel="noreferrer">Open full site <span aria-hidden="true">↗</span></a></div></div>
-        </article>
-      </section>
+        <div class="project-stories">
+          <article class="project-story project-story-featured" aria-labelledby="propeller-title">
+            <div class="project-story-media project-viewer-shell">
+              <div class="project-viewer-topline"><span><i class="live-dot"></i> TWO-MODEL COMPARISON</span><span>CV / TV</span></div>
+              <div id="propeller-viewer" class="project-model-viewer" aria-label="Interactive comparison of CV and TV toroidal propeller models">
+                <canvas id="propeller-canvas" aria-label="CV and TV toroidal propeller models. Drag to orbit, scroll to zoom, and use the divider to compare them."></canvas>
+                <span class="project-model-label project-model-label-left" aria-hidden="true">CV</span>
+                <span class="project-model-label project-model-label-right" aria-hidden="true">TV</span>
+                <div id="propeller-loading" class="project-model-message" role="status" aria-live="polite">Preparing the CV / TV comparison&hellip;</div>
+                <div id="propeller-error" class="project-model-message project-model-error" role="alert" hidden>Propeller models could not be loaded. <a href="./assets/other_projects/Propeller%20Study/CV.glb" download>Download CV</a><span aria-hidden="true"> &middot; </span><a href="./assets/other_projects/Propeller%20Study/TV.glb" download>Download TV</a><span aria-hidden="true"> &middot; </span><a href="./assets/other_projects/Propeller%20Study/CFD%20Anlysis%20of%20Toroidal%20Propeller.pdf" target="_blank" rel="noreferrer">Open study PDF</a></div>
+                <button id="propeller-divider" class="project-divider" type="button" role="slider" aria-label="Move comparison divider between CV and TV propeller models" aria-orientation="horizontal" aria-valuemin="20" aria-valuemax="80" aria-valuenow="50" title="Drag or use arrow keys to compare models" disabled hidden><span></span></button>
+                <button id="propeller-reset" class="project-viewer-reset" type="button" aria-label="Reset propeller comparison view" title="Reset view" disabled hidden>RESET VIEW</button>
+              </div>
+              <div class="project-viewer-footer"><span>DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> DRAG DIVIDER TO COMPARE</span><a href="./assets/other_projects/Propeller%20Study/CFD%20Anlysis%20of%20Toroidal%20Propeller.pdf" target="_blank" rel="noreferrer">READ THE CFD STUDY &rarr;</a></div>
+            </div>
+            <div class="project-story-copy">
+              <p class="project-kicker"><span>PROJECT 01</span><span>PROPULSION / CFD</span></p>
+              <h3 id="propeller-title">Toroidal propeller study</h3>
+              <p>Compare the CV and TV propeller geometries in a shared, interactive view. Explore both forms from the same camera angle, then open the accompanying CFD study.</p>
+              <div class="project-tags"><span>CV / TV COMPARISON</span><span>TOROIDAL PROPELLER</span></div>
+            </div>
+          </article>
 
+          <article class="project-story" aria-labelledby="flightforge-title">
+            <a class="project-story-media project-image-link" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer" aria-label="Open the FlightForge Aerogenesis project PDF">
+              <img src="./assets/other_projects/FlightForge/aerogenesis.png" alt="FlightForge Aerogenesis visual featuring aircraft flow studies, a green concept form, and an engineering rendering" width="2000" height="1414" loading="lazy" decoding="async">
+              <span class="project-media-stamp">FLIGHTFORGE <b>02</b></span>
+              <span class="project-image-cta">OPEN PROJECT SHEET &rarr;</span>
+            </a>
+            <div class="project-story-copy">
+              <p class="project-kicker"><span>PROJECT 02</span><span>AEROGENESIS / CONCEPT</span></p>
+              <h3 id="flightforge-title">FlightForge</h3>
+              <p>An aircraft concept study presented through aerodynamic imagery and the Aerogenesis project sheet.</p>
+              <div class="project-actions"><a class="project-action-link" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer">VIEW AEROGENESIS PDF <span aria-hidden="true">&rarr;</span></a></div>
+            </div>
+          </article>
+
+          <article class="project-story" aria-labelledby="uav-title">
+            <div class="project-story-media project-viewer-shell">
+              <div class="project-viewer-topline"><span><i class="live-dot"></i> INTERACTIVE AIRFRAME</span><span>UAV / 3D</span></div>
+              <div id="uav-viewer" class="project-model-viewer uav-model-viewer" aria-label="Interactive UAV model">
+                <canvas id="uav-canvas" aria-label="Interactive UAV model. Drag to orbit, scroll to zoom, and right-drag to pan."></canvas>
+                <div id="uav-loading" class="project-model-message" role="status" aria-live="polite">Preparing the UAV model&hellip;</div>
+                <div id="uav-error" class="project-model-message project-model-error" role="alert" hidden>UAV model preview could not be loaded. <a href="./assets/other_projects/UAV/Drone.glb" download>Download the GLB model</a><span aria-hidden="true"> &middot; </span><a href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">Open the project PDF</a></div>
+                <button id="uav-reset" class="project-viewer-reset" type="button" aria-label="Reset UAV model view" title="Reset view" disabled hidden>RESET VIEW</button>
+              </div>
+              <div class="project-viewer-footer"><span>DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> RIGHT-DRAG TO PAN</span><a href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">VIEW PROJECT PDF &rarr;</a></div>
+            </div>
+            <div class="project-story-copy">
+              <p class="project-kicker"><span>PROJECT 03</span><span>UAV / AIRFRAME</span></p>
+              <h3 id="uav-title">Unmanned aerial vehicle</h3>
+              <p>Explore the UAV model in 3D and open the accompanying project document for its supporting design work.</p>
+              <div class="project-actions"><a class="project-action-link" href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">OPEN UAV PROJECT PDF <span aria-hidden="true">&rarr;</span></a></div>
+            </div>
+          </article>
+
+          <article class="project-story project-story-fulcrum" aria-labelledby="fulcrum-title-card">
+            <div class="project-story-copy">
+              <p class="project-kicker"><span>PROJECT 04</span><span>WEB / INTERACTIVE</span></p>
+              <h3 id="fulcrum-title-card">Fulcrum</h3>
+              <p>A digital project focused on building, shaping, and refining an interactive experience for the browser.</p>
+              <div class="project-actions"><button id="open-fulcrum" class="button button-primary" type="button">Preview site <span aria-hidden="true">&rarr;</span></button><a class="project-action-link" href="https://reinhardt0731.github.io/reinhardt.fulcrum/" target="_blank" rel="noreferrer">OPEN FULL SITE <span aria-hidden="true">&rarr;</span></a></div>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section id="aircraft-finale" class="aircraft-finale" aria-labelledby="aircraft-finale-title">
+        <div class="section-wrap aircraft-finale-inner">
+          <div class="aircraft-finale-heading">
+            <p class="eyebrow">AIRCRAFT / RECOGNITION</p>
+            <h2 id="aircraft-finale-title">Design in <span>motion.</span></h2>
+            <p>Explore the animated aircraft, then see the design work recognized across three disciplines.</p>
+          </div>
+          <div id="aircraft-stage" class="aircraft-stage" aria-label="Interactive animated aircraft model">
+            <canvas id="aircraft-canvas" aria-label="Animated aircraft model. Drag to orbit, scroll to zoom, and right-drag to pan."></canvas>
+            <div class="aircraft-stage-topline" aria-hidden="true"><span><i class="live-dot"></i> ANIMATED AIRCRAFT</span><span>3D / GLB</span></div>
+            <div id="aircraft-loading" class="aircraft-stage-message" role="status" aria-live="polite">Preparing the aircraft model&hellip;</div>
+            <div id="aircraft-error" class="aircraft-stage-message aircraft-stage-error" role="alert" hidden>Aircraft preview could not be loaded. <a href="./assets/other_projects/animated_aircraft.glb" download>Download the GLB model</a></div>
+            <button id="aircraft-play" class="aircraft-play" type="button" aria-label="Pause aircraft animation" title="Pause animation" disabled hidden>PAUSE ANIMATION <span aria-hidden="true">&#9646;&#9646;</span></button>
+            <span class="aircraft-stage-hint">DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> RIGHT-DRAG TO PAN</span>
+          </div>
+          <div class="awards-strip" aria-labelledby="awards-title">
+            <h3 id="awards-title">AWARDS / RECOGNITION</h3>
+            <div class="awards-display">
+              <svg class="awards-laurels" viewBox="0 0 1000 220" aria-hidden="true" focusable="false">
+                <g class="awards-laurel-branch" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M112 205C45 166 23 102 68 22" fill="none" stroke-width="4" />
+                  <path d="M58 48C29 47 12 33 11 12c22 3 39 14 47 36ZM43 78C15 82 2 70 1 49c21 1 36 11 42 29ZM39 108C13 117 0 107 1 86c20-3 35 5 41 22ZM47 137C23 151 9 144 5 124c19-7 35-2 44 13ZM65 164C44 183 29 179 20 161c16-11 33-10 45 3ZM92 188C75 211 60 210 47 195c13-15 29-19 45-7Z" stroke-width="1" />
+                </g>
+                <g class="awards-laurel-branch" transform="translate(1000 0) scale(-1 1)" fill="currentColor" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M112 205C45 166 23 102 68 22" fill="none" stroke-width="4" />
+                  <path d="M58 48C29 47 12 33 11 12c22 3 39 14 47 36ZM43 78C15 82 2 70 1 49c21 1 36 11 42 29ZM39 108C13 117 0 107 1 86c20-3 35 5 41 22ZM47 137C23 151 9 144 5 124c19-7 35-2 44 13ZM65 164C44 183 29 179 20 161c16-11 33-10 45 3ZM92 188C75 211 60 210 47 195c13-15 29-19 45-7Z" stroke-width="1" />
+                </g>
+              </svg>
+              <ol class="awards-list">
+                <li>Best in Aircraft Design</li>
+                <li>Best in UAV Design</li>
+                <li>Best in Feasibility Study</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </section>
       <section class="closing-section section-wrap">
         <div class="closing-line"></div><p class="eyebrow">A PORTFOLIO FOR WHAT'S NEXT</p><h2>Make. Explain.<br /><span>Make it clear.</span></h2><a href="#top" class="back-top">BACK TO TOP <span>↑</span></a>
       </section>

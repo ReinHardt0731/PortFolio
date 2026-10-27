@@ -6,6 +6,7 @@ const landingGearCanvas = document.querySelector("#landing-gear-canvas");
 const landingGearLoading = document.querySelector("#landing-gear-loading");
 const landingGearError = document.querySelector("#landing-gear-error");
 const landingGearReset = document.querySelector("#landing-gear-reset");
+const landingGearDivider = document.querySelector("#landing-gear-divider");
 let landingGearRenderer;
 let landingGearScene;
 let landingGearCamera;
@@ -13,6 +14,8 @@ let landingGearControls;
 let landingGearResizeObserver;
 let landingGearSavedCamera;
 let landingGearSavedTarget;
+let landingGearSplit = 0.5;
+const landingGearMaterialStates = [];
 
 const ANGLE_DEG = 60;
 const DEFAULT_VIEW_ZOOM = 1.4;
@@ -57,8 +60,26 @@ const backgroundColor = new THREE.Color(0x17263b);
 
 function renderLandingGear() {
   if (landingGearRenderer && landingGearScene && landingGearCamera) {
+    const size = landingGearRenderer.getSize(new THREE.Vector2());
+    const width = size.x;
+    const height = size.y;
+    const split = Math.round(width * landingGearSplit);
+    landingGearRenderer.setScissorTest(true);
+    landingGearRenderer.setScissor(0, 0, split, height);
     landingGearRenderer.render(landingGearScene, landingGearCamera);
+    landingGearMaterialStates.forEach((state) => { state.wire.visible = true; });
+    landingGearRenderer.setScissor(split, 0, width - split, height);
+    landingGearRenderer.render(landingGearScene, landingGearCamera);
+    landingGearMaterialStates.forEach((state) => { state.wire.visible = false; });
+    landingGearRenderer.setScissorTest(false);
   }
+}
+
+function setLandingGearSplit(value) {
+  landingGearSplit = THREE.MathUtils.clamp(value, 0.2, 0.8);
+  landingGearDivider.style.left = `${landingGearSplit * 100}%`;
+  landingGearDivider.setAttribute("aria-valuenow", String(Math.round(landingGearSplit * 100)));
+  renderLandingGear();
 }
 
 function resizeLandingGear() {
@@ -101,6 +122,31 @@ async function startLandingGearViewer() {
     landingGearControls.enablePan = true;
     landingGearControls.screenSpacePanning = true;
     landingGearControls.addEventListener("change", renderLandingGear);
+    let draggingDivider = false;
+    const moveDivider = (event) => {
+      const rect = landingGearCanvas.getBoundingClientRect();
+      if (rect.width) setLandingGearSplit((event.clientX - rect.left) / rect.width);
+    };
+    landingGearDivider.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      draggingDivider = true;
+      landingGearDivider.setPointerCapture(event.pointerId);
+      moveDivider(event);
+    });
+    landingGearDivider.addEventListener("pointermove", (event) => {
+      if (draggingDivider) moveDivider(event);
+    });
+    const finishDivider = () => { draggingDivider = false; };
+    landingGearDivider.addEventListener("pointerup", finishDivider);
+    landingGearDivider.addEventListener("pointercancel", finishDivider);
+    landingGearDivider.addEventListener("keydown", (event) => {
+      const step = event.shiftKey ? 0.05 : 0.015;
+      if (event.key === "ArrowLeft" || event.key === "ArrowDown") { event.preventDefault(); setLandingGearSplit(landingGearSplit - step); }
+      if (event.key === "ArrowRight" || event.key === "ArrowUp") { event.preventDefault(); setLandingGearSplit(landingGearSplit + step); }
+      if (event.key === "Home") { event.preventDefault(); setLandingGearSplit(0.2); }
+      if (event.key === "End") { event.preventDefault(); setLandingGearSplit(0.8); }
+    });
     landingGearReset.addEventListener("click", () => {
       if (!landingGearSavedCamera || !landingGearSavedTarget) return;
       landingGearCamera.position.copy(landingGearSavedCamera);
@@ -124,6 +170,25 @@ async function startLandingGearViewer() {
     const center = bounds.getCenter(new THREE.Vector3());
     const sphere = bounds.getBoundingSphere(new THREE.Sphere());
     modelRoot.position.sub(center);
+    const gearMeshes = [];
+    modelRoot.traverse((object) => { if (object.isMesh) gearMeshes.push(object); });
+    gearMeshes.forEach((object) => {
+      const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
+      const wireMaterials = sourceMaterials.map((material) => new THREE.MeshBasicMaterial({
+        color: material?.metalness >= 0.25 ? 0x101318 : 0xd3ef66,
+        wireframe: true,
+        depthTest: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1,
+      }));
+      const wire = new THREE.Mesh(object.geometry, Array.isArray(object.material) ? wireMaterials : wireMaterials[0]);
+      wire.visible = false;
+      wire.renderOrder = object.renderOrder + 1;
+      object.add(wire);
+      landingGearMaterialStates.push({ wire });
+    });
     landingGearScene.add(modelRoot);
 
     const radius = Math.max(sphere.radius, 0.1);
@@ -585,6 +650,446 @@ if ("IntersectionObserver" in window) {
 
 comparisonPlay.addEventListener("click", toggleComparisonAnimation);
 comparisonHome.addEventListener("click", resetComparisonCamera);
+
+const projectViewerStates = [];
+const projectViewerObservers = [];
+const projectLightColor = new THREE.Color(0x17263b);
+let propellerSplit = 0.5;
+let propellerStarted = false;
+let uavStarted = false;
+let aircraftStarted = false;
+let aircraftNearViewport = false;
+let aircraftAnimationPaused = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+let aircraftMixer = null;
+let aircraftAction = null;
+let aircraftAnimationFrame = 0;
+let aircraftPreviousFrame = 0;
+let aircraftObserver = null;
+
+function createProjectViewport(canvas, viewer, render, { transparent = false } = {}) {
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    alpha: transparent,
+    antialias: true,
+    powerPreference: "high-performance",
+  });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+  renderer.outputColorSpace = THREE.SRGBColorSpace;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.08;
+  renderer.setClearColor(projectLightColor, transparent ? 0 : 1);
+
+  const scene = new THREE.Scene();
+  scene.background = transparent ? null : projectLightColor;
+  scene.add(new THREE.HemisphereLight(0xe2eeff, 0x29354a, 2.0));
+  const key = new THREE.DirectionalLight(0xfff2d7, 3.0);
+  key.position.set(4, 7, 5);
+  scene.add(key);
+  const rim = new THREE.DirectionalLight(0x85baff, 2.0);
+  rim.position.set(-5, 2, -4);
+  scene.add(rim);
+
+  const camera = new THREE.PerspectiveCamera(38, 1, 0.01, 5000);
+  const controls = new OrbitControls(camera, canvas);
+  controls.enableDamping = false;
+  controls.enablePan = true;
+  controls.screenSpacePanning = true;
+  controls.minPolarAngle = 0.15;
+  controls.maxPolarAngle = Math.PI * 0.85;
+
+  const state = { renderer, scene, camera, controls, viewer, ready: false, roots: [], savedCamera: null, savedTarget: null, resizeObserver: null };
+  controls.addEventListener("change", () => render(state));
+  const resize = () => {
+    const rect = viewer.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    renderer.setSize(rect.width, rect.height, false);
+    camera.aspect = rect.width / rect.height;
+    camera.updateProjectionMatrix();
+    if (state.ready) render(state);
+  };
+  state.resizeObserver = new ResizeObserver(resize);
+  state.resizeObserver.observe(viewer);
+  resize();
+  projectViewerStates.push(state);
+  return state;
+}
+
+function centerProjectModel(model) {
+  model.updateMatrixWorld(true);
+  const bounds = new THREE.Box3().setFromObject(model);
+  if (bounds.isEmpty()) throw new Error("The model has no visible geometry.");
+  model.position.sub(bounds.getCenter(new THREE.Vector3()));
+  model.updateMatrixWorld(true);
+  return new THREE.Box3().setFromObject(model);
+}
+
+function fitProjectModels(state, models, zoom = 1) {
+  let radius = 0;
+  models.forEach((model) => {
+    const bounds = centerProjectModel(model);
+    const sphere = bounds.getBoundingSphere(new THREE.Sphere());
+    radius = Math.max(radius, sphere.radius);
+  });
+  radius = Math.max(radius, 0.1);
+  const verticalHalfFov = THREE.MathUtils.degToRad(state.camera.fov * 0.5);
+  const horizontalHalfFov = Math.atan(Math.tan(verticalHalfFov) * Math.max(state.camera.aspect, 0.1));
+  const limitingHalfFov = Math.min(verticalHalfFov, horizontalHalfFov);
+  const distance = (radius / Math.sin(limitingHalfFov)) * 1.18 / zoom;
+  const direction = new THREE.Vector3(-2.8, 1.25, 2.7).normalize();
+  state.camera.position.copy(direction.multiplyScalar(distance));
+  state.camera.near = Math.max(radius / 1000, 0.01);
+  state.camera.far = radius * 30;
+  state.camera.updateProjectionMatrix();
+  state.controls.target.set(0, 0, 0);
+  state.controls.minDistance = radius * 0.75;
+  state.controls.maxDistance = radius * 8;
+  state.savedCamera = state.camera.position.clone();
+  state.savedTarget = state.controls.target.clone();
+  state.controls.update();
+}
+
+function loadProjectModel(loader, url, label, onProgress) {
+  return new Promise((resolve, reject) => {
+    loader.load(url, resolve, (event) => {
+      if (event.lengthComputable && event.total > 0) {
+        onProgress(`${label} ${Math.round((event.loaded / event.total) * 100)}%`);
+      } else {
+        onProgress(`Loading ${label}`);
+      }
+    }, reject);
+  });
+}
+
+function renderPropellerComparison(state) {
+  if (!state?.ready) return;
+  const size = state.renderer.getSize(new THREE.Vector2());
+  const width = Math.max(1, Math.round(size.x));
+  const height = Math.max(1, Math.round(size.y));
+  const split = THREE.MathUtils.clamp(Math.round(width * propellerSplit), 1, width - 1);
+  const [cv, tv] = state.roots;
+  state.renderer.setScissorTest(true);
+  cv.visible = true;
+  tv.visible = false;
+  state.renderer.setScissor(0, 0, split, height);
+  state.renderer.clear(true, true, true);
+  state.renderer.render(state.scene, state.camera);
+  cv.visible = false;
+  tv.visible = true;
+  state.renderer.setScissor(split, 0, width - split, height);
+  state.renderer.clear(true, true, true);
+  state.renderer.render(state.scene, state.camera);
+  state.renderer.setScissorTest(false);
+  cv.visible = true;
+}
+
+function setPropellerSplit(value) {
+  propellerSplit = THREE.MathUtils.clamp(value, 0.2, 0.8);
+  const divider = document.querySelector("#propeller-divider");
+  divider.style.left = `${propellerSplit * 100}%`;
+  divider.setAttribute("aria-valuenow", String(Math.round(propellerSplit * 100)));
+  renderPropellerComparison(projectViewerStates.find((state) => state.viewer.id === "propeller-viewer"));
+}
+
+function installPropellerDivider() {
+  const divider = document.querySelector("#propeller-divider");
+  let activePointer = null;
+  const updateFromPointer = (event) => {
+    const rect = divider.parentElement.getBoundingClientRect();
+    if (rect.width > 0) setPropellerSplit((event.clientX - rect.left) / rect.width);
+  };
+  divider.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    activePointer = event.pointerId;
+    divider.setPointerCapture(event.pointerId);
+    updateFromPointer(event);
+  });
+  divider.addEventListener("pointermove", (event) => {
+    if (event.pointerId === activePointer) updateFromPointer(event);
+  });
+  const finishDrag = (event) => {
+    if (event.pointerId !== activePointer) return;
+    activePointer = null;
+    if (divider.hasPointerCapture(event.pointerId)) divider.releasePointerCapture(event.pointerId);
+  };
+  divider.addEventListener("pointerup", finishDrag);
+  divider.addEventListener("pointercancel", finishDrag);
+  divider.addEventListener("lostpointercapture", () => { activePointer = null; });
+  divider.addEventListener("keydown", (event) => {
+    const step = event.shiftKey ? 0.05 : 0.015;
+    if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+      event.preventDefault();
+      setPropellerSplit(propellerSplit - step);
+    } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setPropellerSplit(propellerSplit + step);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      setPropellerSplit(0.2);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      setPropellerSplit(0.8);
+    }
+  });
+  setPropellerSplit(propellerSplit);
+  document.querySelector("#propeller-reset").addEventListener("click", () => resetProjectCamera("propeller-viewer"));
+}
+
+async function startPropellerViewer() {
+  if (propellerStarted) return;
+  propellerStarted = true;
+  const viewer = document.querySelector("#propeller-viewer");
+  const canvas = document.querySelector("#propeller-canvas");
+  const loading = document.querySelector("#propeller-loading");
+  const error = document.querySelector("#propeller-error");
+  const divider = document.querySelector("#propeller-divider");
+  const reset = document.querySelector("#propeller-reset");
+  let state;
+  try {
+    state = createProjectViewport(canvas, viewer, renderPropellerComparison);
+    installPropellerDivider();
+    const progress = { CV: "queued", TV: "queued" };
+    const updateProgress = (label) => {
+      const key = label.startsWith("CV") ? "CV" : "TV";
+      progress[key] = label;
+      loading.textContent = `${progress.CV}  /  ${progress.TV}`;
+    };
+    loading.hidden = false;
+    error.hidden = true;
+    const loader = new GLTFLoader();
+    const [cvGltf, tvGltf] = await Promise.all([
+      loadProjectModel(loader, "./assets/other_projects/Propeller%20Study/CV.glb", "CV", updateProgress),
+      loadProjectModel(loader, "./assets/other_projects/Propeller%20Study/TV.glb", "TV", updateProgress),
+    ]);
+    const cv = new THREE.Group();
+    const tv = new THREE.Group();
+    cv.add(cvGltf.scene);
+    tv.add(tvGltf.scene);
+    state.scene.add(cv, tv);
+    state.roots = [cv, tv];
+    fitProjectModels(state, state.roots);
+    state.ready = true;
+    loading.hidden = true;
+    divider.disabled = false;
+    divider.hidden = false;
+    reset.disabled = false;
+    reset.hidden = false;
+    renderPropellerComparison(state);
+  } catch (loadError) {
+    console.error("Propeller comparison unavailable:", loadError);
+    loading.hidden = true;
+    error.hidden = false;
+    divider.disabled = true;
+    reset.disabled = true;
+    divider.hidden = true;
+    reset.hidden = true;
+  }
+}
+
+function renderSingleProjectModel(state) {
+  if (state?.ready) state.renderer.render(state.scene, state.camera);
+}
+
+function updateAircraftPlayButton() {
+  const button = document.querySelector("#aircraft-play");
+  if (!button) return;
+  button.textContent = aircraftAnimationPaused ? "PLAY ANIMATION  ▶" : "PAUSE ANIMATION  ‖";
+  button.setAttribute("aria-label", aircraftAnimationPaused ? "Play aircraft animation" : "Pause aircraft animation");
+  button.title = aircraftAnimationPaused ? "Play animation" : "Pause animation";
+}
+
+function stopAircraftAnimationLoop() {
+  if (aircraftAnimationFrame) cancelAnimationFrame(aircraftAnimationFrame);
+  aircraftAnimationFrame = 0;
+  aircraftPreviousFrame = 0;
+}
+
+function animateAircraft(timestamp) {
+  aircraftAnimationFrame = 0;
+  const state = projectViewerStates.find((entry) => entry.viewer.id === "aircraft-stage");
+  if (!state?.ready || aircraftAnimationPaused || !aircraftNearViewport || document.hidden) return;
+  if (aircraftPreviousFrame) aircraftMixer.update(Math.min((timestamp - aircraftPreviousFrame) / 1000, 0.05));
+  aircraftPreviousFrame = timestamp;
+  renderSingleProjectModel(state);
+  aircraftAnimationFrame = requestAnimationFrame(animateAircraft);
+}
+
+function startAircraftAnimationLoop() {
+  if (aircraftAnimationFrame || aircraftAnimationPaused || !aircraftNearViewport || document.hidden) return;
+  aircraftPreviousFrame = 0;
+  aircraftAnimationFrame = requestAnimationFrame(animateAircraft);
+}
+
+function setAircraftAnimationPaused(paused) {
+  aircraftAnimationPaused = paused;
+  if (aircraftAction) aircraftAction.paused = paused;
+  updateAircraftPlayButton();
+  if (paused) {
+    stopAircraftAnimationLoop();
+    renderSingleProjectModel(projectViewerStates.find((entry) => entry.viewer.id === "aircraft-stage"));
+  } else {
+    startAircraftAnimationLoop();
+  }
+}
+
+async function startAircraftViewer() {
+  if (aircraftStarted) return;
+  aircraftStarted = true;
+  const viewer = document.querySelector("#aircraft-stage");
+  const canvas = document.querySelector("#aircraft-canvas");
+  const loading = document.querySelector("#aircraft-loading");
+  const error = document.querySelector("#aircraft-error");
+  const play = document.querySelector("#aircraft-play");
+  let state;
+  try {
+    state = createProjectViewport(canvas, viewer, renderSingleProjectModel, { transparent: true });
+    loading.hidden = false;
+    error.hidden = true;
+    const gltf = await loadProjectModel(new GLTFLoader(), "./assets/other_projects/animated_aircraft.glb", "Aircraft", (status) => {
+      loading.textContent = `${status}...`;
+    });
+    const root = new THREE.Group();
+    root.add(gltf.scene);
+    state.scene.add(root);
+    state.roots = [root];
+    fitProjectModels(state, state.roots, 3);
+    state.ready = true;
+    loading.hidden = true;
+    aircraftMixer = new THREE.AnimationMixer(gltf.scene);
+    if (gltf.animations.length) {
+      aircraftAction = aircraftMixer.clipAction(gltf.animations[0]);
+      aircraftAction.setLoop(THREE.LoopRepeat, Infinity);
+      aircraftAction.play();
+      aircraftAction.paused = aircraftAnimationPaused;
+      play.disabled = false;
+      play.hidden = false;
+      updateAircraftPlayButton();
+    } else {
+      play.hidden = true;
+    }
+    renderSingleProjectModel(state);
+    startAircraftAnimationLoop();
+  } catch (loadError) {
+    console.error("Animated aircraft preview unavailable:", loadError);
+    loading.hidden = true;
+    error.hidden = false;
+    play.hidden = true;
+  }
+}
+
+function observeAircraftViewer(element) {
+  if (!("IntersectionObserver" in window)) {
+    aircraftNearViewport = true;
+    startAircraftViewer();
+    return;
+  }
+  aircraftObserver = new IntersectionObserver((entries) => {
+    const entry = entries[0];
+    if (!entry) return;
+    aircraftNearViewport = entry.isIntersecting;
+    if (aircraftNearViewport) {
+      startAircraftViewer();
+      startAircraftAnimationLoop();
+    } else {
+      stopAircraftAnimationLoop();
+    }
+  }, { rootMargin: "360px 0px" });
+  aircraftObserver.observe(element);
+}
+
+document.querySelector("#aircraft-play").addEventListener("click", () => setAircraftAnimationPaused(!aircraftAnimationPaused));
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) stopAircraftAnimationLoop();
+  else startAircraftAnimationLoop();
+});
+
+async function startUavViewer() {
+  if (uavStarted) return;
+  uavStarted = true;
+  const viewer = document.querySelector("#uav-viewer");
+  const canvas = document.querySelector("#uav-canvas");
+  const loading = document.querySelector("#uav-loading");
+  const error = document.querySelector("#uav-error");
+  const reset = document.querySelector("#uav-reset");
+  let state;
+  try {
+    state = createProjectViewport(canvas, viewer, renderSingleProjectModel);
+    loading.hidden = false;
+    error.hidden = true;
+    reset.disabled = true;
+    const gltf = await loadProjectModel(new GLTFLoader(), "./assets/other_projects/UAV/Drone.glb", "UAV", (status) => {
+      loading.textContent = `${status}...`;
+    });
+    const root = new THREE.Group();
+    root.add(gltf.scene);
+    state.scene.add(root);
+    state.roots = [root];
+    fitProjectModels(state, state.roots);
+    state.ready = true;
+    loading.hidden = true;
+    reset.disabled = false;
+    reset.hidden = false;
+    renderSingleProjectModel(state);
+  } catch (loadError) {
+    console.error("UAV model preview unavailable:", loadError);
+    loading.hidden = true;
+    error.hidden = false;
+    reset.disabled = true;
+    reset.hidden = true;
+  }
+  reset.addEventListener("click", () => resetProjectCamera("uav-viewer"));
+}
+
+function resetProjectCamera(viewerId) {
+  const state = projectViewerStates.find((entry) => entry.viewer.id === viewerId);
+  if (!state?.savedCamera || !state.savedTarget) return;
+  state.camera.position.copy(state.savedCamera);
+  state.controls.target.copy(state.savedTarget);
+  state.controls.update();
+}
+
+function observeProjectViewer(element, start) {
+  if (!("IntersectionObserver" in window)) {
+    start();
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    observer.disconnect();
+    start();
+  }, { rootMargin: "260px 0px" });
+  observer.observe(element);
+  projectViewerObservers.push(observer);
+}
+
+function disposeProjectViewers() {
+  projectViewerObservers.forEach((observer) => observer.disconnect());
+  aircraftObserver?.disconnect();
+  stopAircraftAnimationLoop();
+  projectViewerStates.forEach((state) => {
+    state.resizeObserver?.disconnect();
+    state.controls.dispose();
+    state.roots.forEach((root) => root.traverse((object) => {
+      if (!object.isMesh) return;
+      object.geometry?.dispose();
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      materials.forEach((material) => {
+        if (!material) return;
+        Object.values(material).forEach((value) => {
+          if (value?.isTexture) value.dispose();
+        });
+        material.dispose();
+      });
+    }));
+    state.renderer.dispose();
+  });
+}
+
+observeProjectViewer(document.querySelector("#propeller-viewer"), startPropellerViewer);
+observeProjectViewer(document.querySelector("#uav-viewer"), startUavViewer);
+observeAircraftViewer(document.querySelector("#aircraft-stage"));
+window.addEventListener("pagehide", disposeProjectViewers);
+
 let pdfjsPromise;
 const pdfDocuments = new Map();
 const pdfDialog = document.querySelector("#pdf-dialog");
