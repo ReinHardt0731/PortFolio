@@ -852,6 +852,22 @@ async function startPropellerViewer() {
   const error = document.querySelector("#propeller-error");
   const divider = document.querySelector("#propeller-divider");
   const reset = document.querySelector("#propeller-reset");
+  const modeToggle = document.querySelector("#propeller-mode-toggle");
+  const video = document.querySelector("#propeller-video");
+  const instructions = document.querySelector("#propeller-viewer-instructions");
+  modeToggle.addEventListener("click", () => {
+    const showVideo = !viewer.classList.contains("is-video-mode");
+    modeToggle.textContent = showVideo ? "BACK TO 3D VIEW" : "WATCH VIDEO";
+    modeToggle.setAttribute("aria-label", showVideo ? "Return to 3D propeller comparison" : "Watch toroidal propeller video");
+    instructions.textContent = showVideo
+      ? "VIDEO PLAYER · USE YOUTUBE CONTROLS"
+      : "DRAG TO ORBIT · SCROLL TO ZOOM · DRAG DIVIDER TO COMPARE";
+    viewer.classList.toggle("is-video-mode", showVideo);
+    video.hidden = !showVideo;
+    if (showVideo) video.src = video.dataset.src;
+    else video.removeAttribute("src");
+    if (!showVideo && state?.ready) renderPropellerComparison(state);
+  });
   let state;
   try {
     state = createProjectViewport(canvas, viewer, renderPropellerComparison);
@@ -875,7 +891,7 @@ async function startPropellerViewer() {
     tv.add(tvGltf.scene);
     state.scene.add(cv, tv);
     state.roots = [cv, tv];
-    fitProjectModels(state, state.roots);
+    fitProjectModels(state, state.roots, 2);
     state.ready = true;
     loading.hidden = true;
     divider.disabled = false;
