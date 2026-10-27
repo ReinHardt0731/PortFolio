@@ -19,6 +19,7 @@ const landingGearMaterialStates = [];
 
 const ANGLE_DEG = 60;
 const DEFAULT_VIEW_ZOOM = 1.4;
+const GANNET_COMPARISON_ZOOM = DEFAULT_VIEW_ZOOM * 2;
 const COMPARISON_MARGIN = 0.06;
 const COMPARISON_GAP = 0.12;
 const comparisonCanvas = document.querySelector("#comparison-canvas");
@@ -476,14 +477,14 @@ function restoreBaseMaterials() {
   });
 }
 
-function loadGltf(loader, url, label) {
+function loadGltf(loader, url, label, onProgress) {
   return new Promise((resolve, reject) => {
     loader.load(url, resolve, (event) => {
       if (event.lengthComputable && event.total > 0) {
         const percent = Math.round((event.loaded / event.total) * 100);
-        comparisonLoadingText.textContent = `Loading ${label} model… ${percent}%`;
+        onProgress(label, `${percent}%`);
       } else {
-        comparisonLoadingText.textContent = `Loading ${label} model…`;
+        onProgress(label, "loading");
       }
     }, reject);
   });
@@ -498,7 +499,7 @@ function fitSharedCamera(baseScene, simulationScene, cameraTarget) {
 
   const radius = Math.max(size.length() * 0.5, 0.5);
   const viewDirection = new THREE.Vector3(-2.8, 1.2, 2.6).normalize();
-  const distance = (radius / Math.sin(THREE.MathUtils.degToRad(cameraTarget.fov * 0.5))) * 1.08 / DEFAULT_VIEW_ZOOM;
+  const distance = (radius / Math.sin(THREE.MathUtils.degToRad(cameraTarget.fov * 0.5))) * 1.08 / GANNET_COMPARISON_ZOOM;
   cameraTarget.position.copy(viewDirection.multiplyScalar(distance));
   cameraTarget.near = Math.max(radius / 100, 0.01);
   cameraTarget.far = radius * 30;
@@ -584,12 +585,19 @@ async function startComparison() {
     setComparisonStatus("LOADING MODELS");
     comparisonLoading.hidden = false;
     comparisonError.hidden = true;
-    comparisonLoadingText.textContent = "Loading matched CAD and simulation models…";
+    const modelProgress = { CAD: "waiting", simulation: "waiting" };
+    const updateModelProgress = (label, status) => {
+      modelProgress[label] = status;
+      comparisonLoadingText.textContent = `CAD ${modelProgress.CAD}  /  SIMULATION ${modelProgress.simulation}`;
+    };
+    updateModelProgress("CAD", "queued");
+    updateModelProgress("simulation", "queued");
 
     const [baseGltf, simulationGltf] = await Promise.all([
-      loadGltf(loader, "./assets/gannet.glb", "CAD"),
-      loadGltf(loader, "./assets/gannet_simulation.glb", "simulation"),
+      loadGltf(loader, "./assets/gannet.glb", "CAD", updateModelProgress),
+      loadGltf(loader, "./assets/gannet_simulation.glb", "simulation", updateModelProgress),
     ]);
+    comparisonLoadingText.textContent = "Preparing the shared comparison…";
     baseModel = baseGltf.scene;
     simulationModel = simulationGltf.scene;
     comparisonState.scene.add(baseModel, simulationModel);
@@ -1089,6 +1097,28 @@ observeProjectViewer(document.querySelector("#propeller-viewer"), startPropeller
 observeProjectViewer(document.querySelector("#uav-viewer"), startUavViewer);
 observeAircraftViewer(document.querySelector("#aircraft-stage"));
 window.addEventListener("pagehide", disposeProjectViewers);
+
+function installCardRevealObserver() {
+  const cards = document.querySelectorAll(".drawing-card, .software-card, .project-story");
+  if (!cards.length || !("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      entry.target.classList.toggle("is-visible", entry.isIntersecting);
+    });
+  }, { threshold: 0.08 });
+
+  cards.forEach((card) => {
+    card.classList.add("scroll-reveal");
+    const bounds = card.getBoundingClientRect();
+    if (bounds.top < window.innerHeight && bounds.bottom > 0) card.classList.add("is-visible");
+    observer.observe(card);
+  });
+  document.documentElement.classList.add("scroll-reveal-ready");
+  window.addEventListener("pagehide", () => observer.disconnect(), { once: true });
+}
+
+installCardRevealObserver();
 
 let pdfjsPromise;
 const pdfDocuments = new Map();
