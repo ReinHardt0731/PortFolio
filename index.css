@@ -374,6 +374,8 @@ h1, h2, h3, p { margin-top: 0; }
 .back-top span { color: var(--accent); font-size: 15px; }
 .site-footer { min-height: 75px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; color: #8390a2; font: 8px var(--mono); letter-spacing: .06em; }
 .footer-links { display: flex; align-items: center; gap: clamp(12px, 2.5vw, 30px); }
+.footer-social-link { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.footer-social-link svg { width: 12px; height: 12px; flex: 0 0 auto; }
 .site-footer .wordmark { color: var(--ink); font: 800 10px var(--sans); }
 .site-footer .wordmark-mark { width: 22px; height: 22px; font-size: 11px; }
 
