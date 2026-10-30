@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 462 106" role="img" aria-labelledby="title desc">
+  <title id="title">ParaView</title>
+  <desc id="desc">Three red, green, and blue slanted bars beside the ParaView wordmark and parallel visualization application tagline.</desc>
+  <g transform="skewX(-18)" stroke="#292d32" stroke-width="1.5">
+    <path d="M22 14h15v56H22z" fill="#e33b34"/>
+    <path d="M46 14h15v56H46z" fill="#45a548"/>
+    <path d="M70 14h15v56H70z" fill="#3478c8"/>
+  </g>
+  <text x="102" y="53" fill="#30343a" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="700" letter-spacing="-1.8">ParaView</text>
+  <path d="M103 64h284" stroke="#30343a" stroke-width="1.2"/>
+  <text x="105" y="81" fill="#30343a" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="500" letter-spacing="2.15">PARALLEL VISUALIZATION APPLICATION</text>
+</svg>

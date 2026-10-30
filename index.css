@@ -290,6 +290,18 @@ h1, h2, h3, p { margin-top: 0; }
 .project-image-link::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(7, 14, 24, .02) 45%, rgba(7, 14, 24, .68)); pointer-events: none; }
 .project-image-link img { display: block; width: 100%; height: 100%; object-fit: cover; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
 .project-image-link:hover img { transform: scale(1.025); }
+.flightforge-slideshow img { object-fit: contain; background: #111c2b; opacity: 1; transition: none; }
+.flightforge-slideshow img.is-slideshow-animating { animation: flightforge-fade-cycle 4s linear infinite; }
+.flightforge-slideshow img.is-slideshow-paused { animation-play-state: paused; }
+.flightforge-slideshow:hover img { transform: none; }
+.flightforge-slideshow-controls { position: absolute; left: 14px; bottom: 11px; z-index: 3; display: flex; align-items: center; gap: 6px; }
+.flightforge-slideshow-controls[hidden] { display: none; }
+.flightforge-slideshow-controls button { min-height: 30px; padding: 0 9px; border: 1px solid rgba(215, 228, 245, .36); background: rgba(10, 19, 31, .88); color: #eef2f5; cursor: pointer; font: 8px var(--mono); letter-spacing: .04em; }
+.flightforge-slideshow-controls button:hover, .flightforge-slideshow-controls button:focus-visible { border-color: var(--accent); color: var(--accent); }
+.flightforge-slideshow-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.flightforge-slideshow-controls #flightforge-slide-toggle { min-width: 48px; }
+.flightforge-slideshow-controls span { min-width: 36px; color: #eef2f5; font: 8px var(--mono); text-align: center; text-shadow: 0 1px 4px rgba(0, 0, 0, .8); }
+@keyframes flightforge-fade-cycle { 0%, 100% { opacity: 0; } 25%, 75% { opacity: 1; } }
 .project-story-fulcrum { min-height: 270px; position: relative; grid-template-columns: minmax(0, 1fr); border-color: rgba(211, 239, 102, .3); background-color: #07162c; background-image: linear-gradient(90deg, #07162c 0%, rgba(7, 22, 44, .97) 32%, rgba(7, 22, 44, .76) 61%, rgba(7, 22, 44, .12) 100%), url("./assets/other_projects/Fulcrum%20Logo.png"); background-position: center, right center; background-size: 100% 100%, auto 100%; background-repeat: no-repeat; }
 .project-story-fulcrum .project-story-copy { z-index: 1; grid-column: 1 / -1; width: min(700px, 74%); padding: clamp(26px, 4vw, 46px); }
 .project-media-stamp, .project-image-cta { position: absolute; z-index: 1; color: #eef2f5; font: 8px var(--mono); letter-spacing: .11em; }
@@ -366,6 +378,16 @@ h1, h2, h3, p { margin-top: 0; }
 .award-title { color: #e3c880; font: 500 clamp(15px, 1.7vw, 19px)/1.2 Georgia, "Times New Roman", serif; letter-spacing: .012em; text-transform: uppercase; }
 .award-detail { display: grid; gap: 3px; color: #aab5c4; font: 8px/1.5 var(--mono); letter-spacing: .035em; }
 .award-detail i { color: #c9a85e; font-style: normal; padding-inline: 3px; }
+.certificates-gallery { margin-top: 10px; padding-top: 18px; border-top: 1px solid rgba(199, 217, 239, .14); }
+.certificates-gallery h4 { margin: 0 0 12px; color: #d7bb7b; font: 500 13px/1.3 Georgia, "Times New Roman", serif; letter-spacing: .045em; text-align: center; }
+.certificate-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 14px; }
+.certificate-stack { min-width: 0; display: grid; align-content: start; gap: 14px; }
+.certificate-card { min-width: 0; margin: 0; padding: 10px; border: 1px solid rgba(201, 168, 94, .24); background: linear-gradient(145deg, rgba(26, 39, 57, .8), rgba(15, 25, 39, .8)); }
+.certificate-image-link { display: block; overflow: hidden; background: rgba(255, 255, 255, .96); }
+.certificate-image-link:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.certificate-image-link img { display: block; width: 100%; height: auto; object-fit: contain; }
+.certificate-card figcaption { display: grid; gap: 4px; padding: 10px 2px 1px; color: #e3c880; font: 10px/1.4 var(--mono); text-align: center; }
+.certificate-card figcaption span + span { color: #aab5c4; font-size: 8px; }
 
 .closing-section { padding-block: 23px 82px; text-align: center; }
 .closing-line { width: 1px; height: 42px; margin: 0 auto 21px; background: linear-gradient(transparent, var(--accent)); }
@@ -550,6 +572,9 @@ dialog::backdrop { background: rgba(5, 10, 17, .8); backdrop-filter: blur(4px); 
   .awards-strip { margin-top: 12px; padding-top: 17px; }
   .awards-list { grid-template-columns: minmax(0, 1fr); width: 100%; gap: 9px; }
   .awards-list li { min-height: 145px; }
+  .certificate-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .certificate-stack { gap: 10px; }
+  .certificate-image-link img { max-height: 70vh; }
   .award-title { font-size: clamp(14px, 4vw, 17px); line-height: 1.18; }
   .award-detail { font-size: 7px; }
   .closing-section { padding-bottom: 60px; }

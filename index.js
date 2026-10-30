@@ -1252,6 +1252,109 @@ function disposeProjectViewers() {
   });
 }
 
+function installFlightForgeSlideshow() {
+  const image = document.querySelector("#flightforge-slide-image");
+  const controls = document.querySelector("#flightforge-slideshow-controls");
+  const previousButton = document.querySelector("#flightforge-slide-prev");
+  const toggleButton = document.querySelector("#flightforge-slide-toggle");
+  const nextButton = document.querySelector("#flightforge-slide-next");
+  const slideCount = document.querySelector("#flightforge-slide-count");
+  if (!image || !controls || !previousButton || !toggleButton || !nextButton || !slideCount) return;
+
+  const slides = [
+    { src: "./assets/other_projects/FlightForge/flightforge-slide-01.png", alt: "FlightForge Geometry Modeler showing a wireframe aircraft fuselage and wing." },
+    { src: "./assets/other_projects/FlightForge/flightforge-slide-02.png", alt: "FlightForge analysis view showing an aircraft inside a computational domain." },
+    { src: "./assets/other_projects/FlightForge/flightforge-slide-03.png", alt: "FlightForge convergence plots showing aerodynamic coefficients over iterations." },
+    { src: "./assets/other_projects/FlightForge/flightforge-slide-04.png", alt: "FlightForge performance analysis with power and thrust required plotted against velocity." },
+    { src: "./assets/other_projects/FlightForge/flightforge-slide-05.png", alt: "FlightForge Aerogenesis project board describing an aircraft design and combat simulation game, with software screenshots and aircraft imagery." },
+    { src: "./assets/other_projects/FlightForge/aerogenesis.png", alt: "FlightForge Aerogenesis visual featuring aircraft flow studies, a green concept form, and an engineering rendering." },
+  ];
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let currentSlide = 0;
+  let isPlaying = false;
+  let userPaused = false;
+
+  function updateToggleButton() {
+    toggleButton.disabled = reducedMotion.matches;
+    toggleButton.textContent = reducedMotion.matches ? "PAUSED" : isPlaying ? "PAUSE" : "PLAY";
+    toggleButton.setAttribute("aria-label", reducedMotion.matches ? "Slideshow paused because reduced motion is enabled" : isPlaying ? "Pause slideshow" : "Play slideshow");
+    toggleButton.title = toggleButton.getAttribute("aria-label");
+  }
+
+  function showSlide(index, restartCycle = false) {
+    currentSlide = (index + slides.length) % slides.length;
+    const slide = slides[currentSlide];
+    image.src = slide.src;
+    image.alt = slide.alt;
+    slideCount.textContent = `${currentSlide + 1} / ${slides.length}`;
+
+    if (!restartCycle || reducedMotion.matches) return;
+    image.classList.remove("is-slideshow-animating", "is-slideshow-paused");
+    if (isPlaying) {
+      void image.offsetWidth;
+      image.classList.add("is-slideshow-animating");
+    }
+  }
+
+  function stopSlideshow() {
+    isPlaying = false;
+    if (reducedMotion.matches) image.classList.remove("is-slideshow-animating", "is-slideshow-paused");
+    else if (image.classList.contains("is-slideshow-animating")) image.classList.add("is-slideshow-paused");
+    updateToggleButton();
+  }
+
+  function startSlideshow() {
+    if (isPlaying || reducedMotion.matches || document.hidden || userPaused) return;
+    isPlaying = true;
+    image.classList.add("is-slideshow-animating");
+    image.classList.remove("is-slideshow-paused");
+    updateToggleButton();
+  }
+
+  function preloadSlide(slide) {
+    return new Promise((resolve, reject) => {
+      const preload = new Image();
+      preload.onload = () => resolve(slide);
+      preload.onerror = () => reject(new Error(`Could not load ${slide.src}`));
+      preload.src = slide.src;
+    });
+  }
+
+  image.addEventListener("animationiteration", () => showSlide(currentSlide + 1));
+  previousButton.addEventListener("click", () => showSlide(currentSlide - 1, true));
+  nextButton.addEventListener("click", () => showSlide(currentSlide + 1, true));
+  toggleButton.addEventListener("click", () => {
+    if (isPlaying) {
+      userPaused = true;
+      stopSlideshow();
+    } else {
+      userPaused = false;
+      startSlideshow();
+    }
+  });
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) stopSlideshow();
+    else startSlideshow();
+    updateToggleButton();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stopSlideshow();
+    else startSlideshow();
+  });
+  window.addEventListener("pagehide", stopSlideshow, { once: true });
+
+  Promise.all(slides.map(preloadSlide)).then(() => {
+    showSlide(0);
+    controls.hidden = false;
+    startSlideshow();
+    updateToggleButton();
+  }).catch((error) => {
+    console.warn("FlightForge slideshow images are not ready; showing the project poster instead.", error);
+  });
+}
+
+installFlightForgeSlideshow();
+
 observeProjectViewer(document.querySelector("#propeller-viewer"), startPropellerViewer);
 observeProjectViewer(document.querySelector("#uav-viewer"), startUavViewer);
 observeAircraftViewer(document.querySelector("#aircraft-stage"));

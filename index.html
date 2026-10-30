@@ -273,6 +273,7 @@
               <div class="software-group-cards">
                 <a class="software-card" href="https://www.python.org/" target="_blank" rel="noopener noreferrer" aria-label="Python website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/python.svg" alt="" width="553" height="164" loading="lazy" decoding="async"></span><span class="software-name">Python</span></a>
                 <a class="software-card" href="https://openfoam.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenFOAM website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/openfoam.svg" alt="" width="496" height="177" loading="lazy" decoding="async"></span><span class="software-name">OpenFOAM</span></a>
+                <a class="software-card" href="https://www.paraview.org/" target="_blank" rel="noopener noreferrer" aria-label="ParaView website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/paraview-wordmark.svg" alt="" width="462" height="106" loading="lazy" decoding="async"></span><span class="software-name">ParaView</span></a>
                 <a class="software-card" href="https://www.xflr5.tech/xflr5.html" target="_blank" rel="noopener noreferrer" aria-label="XFLR5 website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/xflr5-wordmark.svg" alt="" width="360" height="150" loading="lazy" decoding="async"></span><span class="software-name">XFLR5</span></a>
                 <a class="software-card" href="https://www.salome-platform.org/" target="_blank" rel="noopener noreferrer" aria-label="SALOME website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/salome-wordmark.svg" alt="" width="340" height="64" loading="lazy" decoding="async"></span><span class="software-name">SALOME</span></a>
               </div>
@@ -324,11 +325,17 @@
           </article>
 
           <article class="project-story" aria-labelledby="flightforge-title">
-            <a class="project-story-media project-image-link" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer" aria-label="Open the FlightForge Aerogenesis project PDF">
-              <img src="./assets/other_projects/FlightForge/aerogenesis.png" alt="FlightForge Aerogenesis visual featuring aircraft flow studies, a green concept form, and an engineering rendering" width="2000" height="1414" loading="lazy" decoding="async">
+            <div class="project-story-media project-image-link flightforge-slideshow" role="group" aria-label="FlightForge screenshot slideshow">
+              <img id="flightforge-slide-image" src="./assets/other_projects/FlightForge/aerogenesis.png" alt="FlightForge Aerogenesis visual featuring aircraft flow studies, a green concept form, and an engineering rendering" width="2000" height="1414" loading="lazy" decoding="async">
               <span class="project-media-stamp">FLIGHTFORGE <b>02</b></span>
-              <span class="project-image-cta">OPEN PROJECT SHEET &rarr;</span>
-            </a>
+              <div id="flightforge-slideshow-controls" class="flightforge-slideshow-controls" aria-label="Slideshow controls" hidden>
+                <button id="flightforge-slide-prev" type="button" aria-label="Previous screenshot" title="Previous screenshot">&larr;</button>
+                <button id="flightforge-slide-toggle" type="button" aria-label="Pause slideshow" title="Pause slideshow">PAUSE</button>
+                <span id="flightforge-slide-count" aria-live="off">1 / 4</span>
+                <button id="flightforge-slide-next" type="button" aria-label="Next screenshot" title="Next screenshot">&rarr;</button>
+              </div>
+              <a class="project-image-cta" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer">OPEN PROJECT SHEET &rarr;</a>
+            </div>
             <div class="project-story-copy">
               <p class="project-kicker"><span>PROJECT 02</span><span>PYTHON / AIRCRAFT DESIGN PIPELINE</span></p>
               <h3 id="flightforge-title">FlightForge</h3>
@@ -430,6 +437,31 @@
                 </li>
               </ol>
             </div>
+            <section class="certificates-gallery" aria-labelledby="certificates-title">
+              <h4 id="certificates-title">HACKATHON CERTIFICATES</h4>
+              <div class="certificate-grid">
+                <figure class="certificate-card">
+                  <a class="certificate-image-link" href="./assets/planetary.png" target="_blank" rel="noreferrer" aria-label="Open the Planetary Health Hackathon certificate at full size">
+                    <img src="./assets/planetary.png" alt="Certificate confirming Rexus Bryan L. Gan's successful participation in the Planetary Health Hackathon, 26–28 November 2021." width="509" height="717" loading="lazy" decoding="async">
+                  </a>
+                  <figcaption><span>Planetary Health Hackathon</span><span>26–28 Nov 2021</span></figcaption>
+                </figure>
+                <div class="certificate-stack">
+                  <figure class="certificate-card">
+                    <a class="certificate-image-link" href="./assets/hackathon.png" target="_blank" rel="noreferrer" aria-label="Open the Galileo Hackathon certificate at full size">
+                      <img src="./assets/hackathon.png" alt="Certificate of participation awarded to Rexus Gan for the Galileo Hackathon in the Philippines, 12–14 November 2021." width="1014" height="707" loading="lazy" decoding="async">
+                    </a>
+                    <figcaption><span>Galileo Hackathon by GNSS.asia</span><span>Philippines · 12–14 Nov 2021</span></figcaption>
+                  </figure>
+                  <figure class="certificate-card">
+                    <a class="certificate-image-link" href="./assets/thermo.PNG" target="_blank" rel="noreferrer" aria-label="Open the thermodynamics tutorial certificate at full size">
+                      <img src="./assets/thermo.PNG" alt="Certificate of participation awarded to Rexus Bryan L. Gan for successfully completing a thermodynamics tutorial, December 28, 2021." width="1012" height="712" loading="lazy" decoding="async">
+                    </a>
+                    <figcaption><span>Thermodynamics Tutorial</span><span>MAESO · 28 Dec 2021</span></figcaption>
+                  </figure>
+                </div>
+              </div>
+            </section>
           </div>
         </div>
       </section>
