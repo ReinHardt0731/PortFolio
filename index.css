@@ -394,10 +394,24 @@ h1, h2, h3, p { margin-top: 0; }
 .certificate-image-link img { display: block; width: 100%; height: auto; object-fit: contain; }
 .certificate-card figcaption { display: grid; gap: 4px; padding: 10px 2px 1px; color: #e3c880; font: 10px/1.4 var(--mono); text-align: center; }
 .certificate-card figcaption span + span { color: #aab5c4; font-size: 8px; }
+.licensure-results { margin-top: 20px; padding: 22px 24px 16px; border: 1px solid rgba(201, 168, 94, .34); background: linear-gradient(145deg, rgba(26, 39, 57, .94), rgba(15, 25, 39, .94)); box-shadow: 0 14px 34px rgba(0, 0, 0, .16); }
+.licensure-results-heading { display: flex; justify-content: space-between; align-items: stretch; gap: 24px; padding-bottom: 18px; border-bottom: 1px solid rgba(199, 217, 239, .16); }
+.licensure-title-group { min-width: 0; align-self: center; }
+.licensure-title-group .eyebrow { margin: 0; color: #c9a85e; font-size: 8px; }
+.licensure-title-group h4 { max-width: 620px; margin: 7px 0 0; color: #f1e4c0; font: 500 clamp(18px, 2.2vw, 24px)/1.25 Georgia, "Times New Roman", serif; }
+.licensure-year { margin: 8px 0 0; color: #aab5c4; font: 9px var(--mono); letter-spacing: .1em; }
+.licensure-highlight { flex: 0 0 175px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; gap: 2px; padding-left: 23px; border-left: 1px solid rgba(201, 168, 94, .3); }
+.licensure-status { margin-bottom: 2px; color: var(--accent); font: 500 8px var(--mono); letter-spacing: .14em; }
+.licensure-average { color: #f0dc9a; font: 500 36px/.98 Georgia, "Times New Roman", serif; letter-spacing: -.045em; }
+.licensure-average-label { color: #aab5c4; font: 7px var(--mono); letter-spacing: .1em; }
+.licensure-subjects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 32px; margin: 0; padding: 9px 0 0; list-style: none; }
+.licensure-subjects li { min-width: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 11px 0; border-bottom: 1px solid rgba(199, 217, 239, .1); color: #c2ccd7; font: 10px/1.45 var(--mono); }
+.licensure-subjects li strong { flex: 0 0 auto; min-width: 44px; color: #e3c880; font-size: 11px; font-weight: 500; text-align: right; }
 
 .closing-section { padding-block: 23px 82px; text-align: center; }
 .closing-line { width: 1px; height: 42px; margin: 0 auto 21px; background: linear-gradient(transparent, var(--accent)); }
 .closing-section h2 { margin-block: 15px 23px; font-size: clamp(40px, 5.5vw, 70px); }
+.closing-contact { margin: -5px 0 20px; }
 .back-top { display: inline-flex; align-items: center; gap: 12px; color: #9ca8b7; font: 9px var(--mono); letter-spacing: .09em; }
 .back-top span { color: var(--accent); font-size: 15px; }
 .site-footer { min-height: 75px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; color: #8390a2; font: 8px var(--mono); letter-spacing: .06em; }
@@ -581,6 +595,15 @@ dialog::backdrop { background: rgba(5, 10, 17, .8); backdrop-filter: blur(4px); 
   .certificate-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
   .certificate-stack { gap: 10px; }
   .certificate-image-link img { max-height: 70vh; }
+  .licensure-results { padding: 17px 14px 11px; }
+  .licensure-results-heading { align-items: stretch; flex-direction: column; gap: 14px; padding-bottom: 13px; }
+  .licensure-title-group h4 { font-size: 19px; }
+  .licensure-highlight { flex-basis: auto; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 9px; align-items: center; padding: 10px 0 0; border-top: 1px solid rgba(201, 168, 94, .25); border-left: 0; }
+  .licensure-status { grid-column: 1 / -1; }
+  .licensure-average { grid-row: 2; font-size: 32px; }
+  .licensure-average-label { grid-row: 2; align-self: end; padding-bottom: 4px; }
+  .licensure-subjects { grid-template-columns: minmax(0, 1fr); }
+  .licensure-subjects li { gap: 10px; padding: 10px 0; font-size: 9px; }
   .award-title { font-size: clamp(14px, 4vw, 17px); line-height: 1.18; }
   .award-detail { font-size: 7px; }
   .closing-section { padding-bottom: 60px; }
