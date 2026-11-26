@@ -2053,11 +2053,11 @@ function installWebSkillBackgroundSlideshow() {
     timer = 0;
   };
   const scheduleNext = (runId) => {
-    if (reducedMotion.matches || !panel.classList.contains("is-active") || document.hidden) return;
+    if (reducedMotion.matches || document.hidden) return;
     timer = window.setTimeout(async () => {
       const nextIndex = (activeIndex + 1) % slides.length;
       const loaded = await loadSlide(nextIndex);
-      if (runId !== generation || !panel.classList.contains("is-active") || document.hidden) return;
+      if (runId !== generation || document.hidden) return;
       if (loaded) showSlide(nextIndex);
       void loadSlide((activeIndex + 1) % slides.length);
       scheduleNext(runId);
@@ -2065,33 +2065,27 @@ function installWebSkillBackgroundSlideshow() {
   };
   const start = async () => {
     stop();
-    if (!panel.classList.contains("is-active") || document.hidden) return;
+    if (document.hidden) return;
     if (reducedMotion.matches) activeIndex = 0;
     const runId = ++generation;
     const loaded = await loadSlide(activeIndex);
-    if (runId !== generation || !panel.classList.contains("is-active") || document.hidden) return;
+    if (runId !== generation || document.hidden) return;
     if (loaded) showSlide(activeIndex);
     if (reducedMotion.matches) return;
     void loadSlide((activeIndex + 1) % slides.length);
     scheduleNext(runId);
   };
-  const syncPanelState = () => {
-    if (panel.classList.contains("is-active") && !document.hidden) void start();
-    else {
-      stop();
-      if (reducedMotion.matches && !document.hidden) {
-        void loadSlide(0).then((loaded) => {
-          if (loaded && reducedMotion.matches && !panel.classList.contains("is-active")) showSlide(0);
-        });
-      }
-    }
+  const syncBackgroundState = () => {
+    if (document.hidden) stop();
+    else void start();
   };
 
-  const panelObserver = new MutationObserver(syncPanelState);
-  panelObserver.observe(panel, { attributes: true, attributeFilter: ["class"] });
-  document.addEventListener("visibilitychange", syncPanelState);
-  reducedMotion.addEventListener("change", syncPanelState);
-  syncPanelState();
+  document.addEventListener("visibilitychange", syncBackgroundState);
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) activeIndex = 0;
+    syncBackgroundState();
+  });
+  syncBackgroundState();
 }
 
 installWebSkillBackgroundSlideshow();
