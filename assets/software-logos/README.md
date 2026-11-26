@@ -12,5 +12,10 @@ The site keeps these logo assets local so the cards do not depend on remote imag
 | `paraview-wordmark.svg` | Local vector redraw based on the ParaView logo by Sandia National Laboratories, Los Alamos National Laboratory, and Kitware, Inc.; [Wikimedia Commons source](https://commons.wikimedia.org/wiki/File:ParaView_splash1.png), licensed CC BY 2.5. |
 | `xflr5-wordmark.svg` | Original local vector redraw based on the XFLR5 logo reference supplied for this portfolio. |
 | `salome-wordmark.svg` | Original local vector redraw based on the SALOME logo reference supplied for this portfolio. |
+| `javascript.svg` | Local vector mark for JavaScript, based on the familiar JS badge. |
+| `css.svg` | Local vector mark for CSS, based on the CSS shield mark. |
+| `html.svg` | Local vector mark for HTML, based on the HTML shield mark. |
+| `codex-wordmark.svg` | Local Codex wordmark treatment. |
+| `claude-wordmark.svg` | Local Claude wordmark treatment with a simple starburst motif. |
 
 The SOLIDWORKS card currently uses its name as text rather than an image logo. The official SOLIDWORKS logo guidelines restrict use to authorized users; see [the brand guidance](https://www.solidworks.com/partners/solution-partner-graphics-charter).

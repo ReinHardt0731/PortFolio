@@ -3,6 +3,23 @@ import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 
+function collapseProjectDetails() {
+  document.querySelectorAll("details.project-details, details.project-details-aircraft").forEach((details) => {
+    details.removeAttribute("open");
+    const panel = details.querySelector(":scope > .project-details-panel");
+    if (panel) panel.inert = true;
+  });
+}
+
+collapseProjectDetails();
+window.addEventListener("pageshow", collapseProjectDetails);
+document.querySelectorAll("details.project-details, details.project-details-aircraft").forEach((details) => {
+  details.addEventListener("toggle", () => {
+    const panel = details.querySelector(":scope > .project-details-panel");
+    if (panel) panel.inert = !details.open;
+  });
+});
+
 const isMobileViewport = window.matchMedia("(max-width: 680px)").matches;
 const renderPixelRatio = Math.min(window.devicePixelRatio || 1, isMobileViewport ? 1 : 1.25);
 
@@ -31,42 +48,24 @@ function updateLoadingProgress(progressElement, status) {
   progressElement.style.setProperty("--progress", `${safePercent}%`);
 }
 
-const landingGearCanvas = document.querySelector("#landing-gear-canvas");
-const landingGearLoading = document.querySelector("#landing-gear-loading");
-const landingGearLoadingText = document.querySelector("#landing-gear-loading-text");
-const landingGearProgress = document.querySelector("#landing-gear-progress");
-const landingGearError = document.querySelector("#landing-gear-error");
-const landingGearReset = document.querySelector("#landing-gear-reset");
-const landingGearDivider = document.querySelector("#landing-gear-divider");
-let landingGearRenderer;
-let landingGearScene;
-let landingGearCamera;
-let landingGearControls;
-let landingGearResizeObserver;
-let landingGearSavedCamera;
-let landingGearSavedTarget;
-let landingGearSplit = 0.5;
-const landingGearMaterialStates = [];
-
 const ANGLE_DEG = 60;
 const DEFAULT_VIEW_ZOOM = 1.4;
 const GANNET_COMPARISON_ZOOM = DEFAULT_VIEW_ZOOM * 2;
 const COMPARISON_MARGIN = 0.06;
-const COMPARISON_GAP = 0.12;
 const comparisonCanvas = document.querySelector("#comparison-canvas");
 const comparisonViewer = document.querySelector("#comparison-viewer");
 const comparisonShell = document.querySelector(".comparison-shell");
 const comparisonStatus = document.querySelector("#comparison-status");
 const comparisonLoading = document.querySelector("#comparison-loading");
 const comparisonLoadingText = document.querySelector("#comparison-loading-text");
-const comparisonCadProgress = document.querySelector("#comparison-cad-progress");
+const comparisonMeshProgress = document.querySelector("#comparison-mesh-progress");
 const comparisonSimulationProgress = document.querySelector("#comparison-simulation-progress");
 const comparisonError = document.querySelector("#comparison-error");
 const comparisonPlay = document.querySelector("#comparison-play");
 const comparisonHome = document.querySelector("#comparison-home");
-const dividerElements = [document.querySelector("#divider-one"), document.querySelector("#divider-two")];
+const dividerElements = [document.querySelector("#divider-mesh-simulation")];
 
-let dividerPositions = [1 / 3, 2 / 3];
+let dividerPositions = [0.5];
 let renderer;
 let controls;
 let camera;
@@ -96,170 +95,12 @@ const clock = new THREE.Clock();
 const drawingBufferSize = new THREE.Vector2();
 const backgroundColor = new THREE.Color(0x17263b);
 
-function renderLandingGear() {
-  if (landingGearRenderer && landingGearScene && landingGearCamera) {
-    const size = landingGearRenderer.getSize(new THREE.Vector2());
-    const width = size.x;
-    const height = size.y;
-    const split = Math.round(width * landingGearSplit);
-    landingGearRenderer.setScissorTest(true);
-    landingGearRenderer.setScissor(0, 0, split, height);
-    landingGearRenderer.render(landingGearScene, landingGearCamera);
-    landingGearMaterialStates.forEach((state) => { state.wire.visible = true; });
-    landingGearRenderer.setScissor(split, 0, width - split, height);
-    landingGearRenderer.render(landingGearScene, landingGearCamera);
-    landingGearMaterialStates.forEach((state) => { state.wire.visible = false; });
-    landingGearRenderer.setScissorTest(false);
-  }
-}
-
-function setLandingGearSplit(value) {
-  landingGearSplit = THREE.MathUtils.clamp(value, 0.2, 0.8);
-  landingGearDivider.style.left = `${landingGearSplit * 100}%`;
-  landingGearDivider.setAttribute("aria-valuenow", String(Math.round(landingGearSplit * 100)));
-  renderLandingGear();
-}
-
-function resizeLandingGear() {
-  const frame = landingGearCanvas.parentElement;
-  const rect = frame.getBoundingClientRect();
-  if (!rect.width || !rect.height || !landingGearRenderer) return;
-  landingGearRenderer.setSize(rect.width, rect.height, false);
-  landingGearCamera.aspect = rect.width / rect.height;
-  landingGearCamera.updateProjectionMatrix();
-  renderLandingGear();
-}
-
-async function startLandingGearViewer() {
-  try {
-    landingGearRenderer = new THREE.WebGLRenderer({
-      canvas: landingGearCanvas,
-      alpha: false,
-      antialias: !isMobileViewport,
-      powerPreference: "high-performance",
-    });
-    landingGearRenderer.setPixelRatio(renderPixelRatio);
-    landingGearRenderer.outputColorSpace = THREE.SRGBColorSpace;
-    landingGearRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-    landingGearRenderer.toneMappingExposure = 1.1;
-    landingGearRenderer.setClearColor(backgroundColor, 1);
-
-    landingGearScene = new THREE.Scene();
-    landingGearScene.background = backgroundColor;
-    landingGearScene.add(new THREE.HemisphereLight(0xe2eeff, 0x29354a, 2.1));
-    const key = new THREE.DirectionalLight(0xfff2d7, 3.2);
-    key.position.set(4, 7, 5);
-    landingGearScene.add(key);
-    const rim = new THREE.DirectionalLight(0x85baff, 2.2);
-    rim.position.set(-5, 2, -4);
-    landingGearScene.add(rim);
-
-    landingGearCamera = new THREE.PerspectiveCamera(35, 1, 0.01, 5000);
-    landingGearControls = new OrbitControls(landingGearCamera, landingGearCanvas);
-    landingGearControls.enableDamping = false;
-    landingGearControls.enablePan = true;
-    landingGearControls.screenSpacePanning = true;
-    landingGearControls.addEventListener("change", renderLandingGear);
-    let draggingDivider = false;
-    const moveDivider = (event) => {
-      const rect = landingGearCanvas.getBoundingClientRect();
-      if (rect.width) setLandingGearSplit((event.clientX - rect.left) / rect.width);
-    };
-    landingGearDivider.addEventListener("pointerdown", (event) => {
-      event.preventDefault();
-      event.stopPropagation();
-      draggingDivider = true;
-      landingGearDivider.setPointerCapture(event.pointerId);
-      moveDivider(event);
-    });
-    landingGearDivider.addEventListener("pointermove", (event) => {
-      if (draggingDivider) moveDivider(event);
-    });
-    const finishDivider = () => { draggingDivider = false; };
-    landingGearDivider.addEventListener("pointerup", finishDivider);
-    landingGearDivider.addEventListener("pointercancel", finishDivider);
-    landingGearDivider.addEventListener("keydown", (event) => {
-      const step = event.shiftKey ? 0.05 : 0.015;
-      if (event.key === "ArrowLeft" || event.key === "ArrowDown") { event.preventDefault(); setLandingGearSplit(landingGearSplit - step); }
-      if (event.key === "ArrowRight" || event.key === "ArrowUp") { event.preventDefault(); setLandingGearSplit(landingGearSplit + step); }
-      if (event.key === "Home") { event.preventDefault(); setLandingGearSplit(0.2); }
-      if (event.key === "End") { event.preventDefault(); setLandingGearSplit(0.8); }
-    });
-    landingGearReset.addEventListener("click", () => {
-      if (!landingGearSavedCamera || !landingGearSavedTarget) return;
-      landingGearCamera.position.copy(landingGearSavedCamera);
-      landingGearControls.target.copy(landingGearSavedTarget);
-      landingGearControls.update();
-    });
-
-    landingGearResizeObserver = new ResizeObserver(resizeLandingGear);
-    landingGearResizeObserver.observe(landingGearCanvas.parentElement);
-    resizeLandingGear();
-
-    const gltf = await createGLTFLoader().loadAsync("./assets/Landing_Gear.glb", (event) => {
-      if (event.lengthComputable && event.total > 0) {
-        const status = `Loading landing gear model… ${Math.round((event.loaded / event.total) * 100)}%`;
-        landingGearLoadingText.textContent = status;
-        updateLoadingProgress(landingGearProgress, status);
-      }
-    });
-    const modelRoot = new THREE.Group();
-    modelRoot.add(gltf.scene);
-    modelRoot.updateMatrixWorld(true);
-    const bounds = new THREE.Box3().setFromObject(modelRoot);
-    const center = bounds.getCenter(new THREE.Vector3());
-    const sphere = bounds.getBoundingSphere(new THREE.Sphere());
-    modelRoot.position.sub(center);
-    const gearMeshes = [];
-    modelRoot.traverse((object) => { if (object.isMesh) gearMeshes.push(object); });
-    gearMeshes.forEach((object) => {
-      const sourceMaterials = Array.isArray(object.material) ? object.material : [object.material];
-      const wireMaterials = sourceMaterials.map((material) => new THREE.MeshBasicMaterial({
-        color: material?.metalness >= 0.25 ? 0x101318 : 0xd3ef66,
-        wireframe: true,
-        depthTest: true,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1,
-      }));
-      const wire = new THREE.Mesh(object.geometry, Array.isArray(object.material) ? wireMaterials : wireMaterials[0]);
-      wire.visible = false;
-      wire.renderOrder = object.renderOrder + 1;
-      object.add(wire);
-      landingGearMaterialStates.push({ wire });
-    });
-    landingGearScene.add(modelRoot);
-
-    const radius = Math.max(sphere.radius, 0.1);
-    const direction = new THREE.Vector3(3.2, 1.1, 0.8).normalize();
-    const distance = (radius / Math.sin(THREE.MathUtils.degToRad(landingGearCamera.fov * 0.5))) * 1.08 / DEFAULT_VIEW_ZOOM;
-    landingGearCamera.position.copy(direction.multiplyScalar(distance));
-    landingGearCamera.near = Math.max(radius / 100, 0.01);
-    landingGearCamera.far = radius * 30;
-    landingGearCamera.updateProjectionMatrix();
-    landingGearControls.target.set(0, 0, 0);
-    landingGearControls.minDistance = radius * 0.8;
-    landingGearControls.maxDistance = radius * 8;
-    landingGearSavedCamera = landingGearCamera.position.clone();
-    landingGearSavedTarget = landingGearControls.target.clone();
-    landingGearControls.update();
-    landingGearLoading.hidden = true;
-    renderLandingGear();
-  } catch (error) {
-    console.error("Landing gear preview unavailable:", error);
-    landingGearLoading.hidden = true;
-    landingGearError.hidden = false;
-    landingGearReset.disabled = true;
-  }
-}
-
 function setComparisonStatus(message) {
   comparisonStatus.textContent = message.toUpperCase();
 }
 
 function setComparisonError(error, message) {
-  console.error("Three-way comparison unavailable:", error);
+  console.error("Mesh and simulation comparison unavailable:", error);
   comparisonLoading.hidden = true;
   comparisonError.hidden = false;
   comparisonError.textContent = error?.message ? `${message} (${error.message})` : message;
@@ -278,38 +119,28 @@ function getDividerLimits() {
 
 function syncDividerUI() {
   const limits = getDividerLimits();
-  dividerPositions[0] = THREE.MathUtils.clamp(dividerPositions[0], limits.min, Math.min(limits.max, dividerPositions[1] - COMPARISON_GAP));
-  dividerPositions[1] = THREE.MathUtils.clamp(dividerPositions[1], Math.max(limits.min, dividerPositions[0] + COMPARISON_GAP), limits.max);
-
-  dividerElements.forEach((element, index) => {
-    const value = dividerPositions[index];
-    const min = index === 0 ? limits.min : Math.max(limits.min, dividerPositions[0] + COMPARISON_GAP);
-    const max = index === 0 ? Math.min(limits.max, dividerPositions[1] - COMPARISON_GAP) : limits.max;
-    element.style.left = `${value * 100}%`;
-    element.setAttribute("aria-valuemin", String(Math.round(min * 100)));
-    element.setAttribute("aria-valuemax", String(Math.round(max * 100)));
-    element.setAttribute("aria-valuenow", String(Math.round(value * 100)));
-  });
+  dividerPositions[0] = THREE.MathUtils.clamp(dividerPositions[0], limits.min, limits.max);
+  const element = dividerElements[0];
+  element.style.left = `${dividerPositions[0] * 100}%`;
+  element.setAttribute("aria-valuemin", String(Math.round(limits.min * 100)));
+  element.setAttribute("aria-valuemax", String(Math.round(limits.max * 100)));
+  element.setAttribute("aria-valuenow", String(Math.round(dividerPositions[0] * 100)));
 }
 
-function moveDivider(index, nextPosition) {
+function moveDivider(nextPosition) {
   const limits = getDividerLimits();
-  if (index === 0) {
-    dividerPositions[0] = THREE.MathUtils.clamp(nextPosition, limits.min, dividerPositions[1] - COMPARISON_GAP);
-  } else {
-    dividerPositions[1] = THREE.MathUtils.clamp(nextPosition, dividerPositions[0] + COMPARISON_GAP, limits.max);
-  }
+  dividerPositions[0] = THREE.MathUtils.clamp(nextPosition, limits.min, limits.max);
   syncDividerUI();
   scheduleComparisonFrame();
 }
 
 function installDividerControls() {
   comparisonViewer.style.setProperty("--divider-rotation", `${ANGLE_DEG - 90}deg`);
-  dividerElements.forEach((element, index) => {
+  dividerElements.forEach((element) => {
     let activePointer = null;
     const updateFromPointer = (event) => {
       const rect = comparisonViewer.getBoundingClientRect();
-      if (rect.width > 0) moveDivider(index, (event.clientX - rect.left) / rect.width);
+      if (rect.width > 0) moveDivider((event.clientX - rect.left) / rect.width);
     };
 
     element.addEventListener("pointerdown", (event) => {
@@ -337,27 +168,24 @@ function installDividerControls() {
     });
     element.addEventListener("keydown", (event) => {
       const limits = getDividerLimits();
-      const min = index === 0 ? limits.min : dividerPositions[0] + COMPARISON_GAP;
-      const max = index === 0 ? dividerPositions[1] - COMPARISON_GAP : limits.max;
       const step = event.shiftKey ? 0.05 : 0.015;
       if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
         event.preventDefault();
-        moveDivider(index, dividerPositions[index] - step);
+        moveDivider(dividerPositions[0] - step);
       } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
         event.preventDefault();
-        moveDivider(index, dividerPositions[index] + step);
+        moveDivider(dividerPositions[0] + step);
       } else if (event.key === "Home") {
         event.preventDefault();
-        moveDivider(index, min);
+        moveDivider(limits.min);
       } else if (event.key === "End") {
         event.preventDefault();
-        moveDivider(index, max);
+        moveDivider(limits.max);
       }
     });
   });
   syncDividerUI();
 }
-
 function createComparisonRenderer() {
   renderer = new THREE.WebGLRenderer({
     canvas: comparisonCanvas,
@@ -409,7 +237,7 @@ function createComparisonRenderer() {
     depthBuffer: true,
     stencilBuffer: false,
   };
-  renderTargets = [0, 1, 2].map(() => {
+  renderTargets = [0, 1].map(() => {
     const target = new THREE.WebGLRenderTarget(1, 1, targetOptions);
     target.texture.colorSpace = THREE.LinearSRGBColorSpace;
     target.texture.generateMipmaps = false;
@@ -418,12 +246,10 @@ function createComparisonRenderer() {
 
   const compositeMaterial = new THREE.ShaderMaterial({
     uniforms: {
-      uShaded: { value: renderTargets[0].texture },
-      uMesh: { value: renderTargets[1].texture },
-      uSimulation: { value: renderTargets[2].texture },
+      uMesh: { value: renderTargets[0].texture },
+      uSimulation: { value: renderTargets[1].texture },
       uResolution: { value: new THREE.Vector2(1, 1) },
-      uDividerOne: { value: dividerPositions[0] },
-      uDividerTwo: { value: dividerPositions[1] },
+      uDivider: { value: dividerPositions[0] },
       uAngle: { value: THREE.MathUtils.degToRad(ANGLE_DEG) },
     },
     vertexShader: `
@@ -434,23 +260,18 @@ function createComparisonRenderer() {
       }
     `,
     fragmentShader: `
-      uniform sampler2D uShaded;
       uniform sampler2D uMesh;
       uniform sampler2D uSimulation;
       uniform vec2 uResolution;
-      uniform float uDividerOne;
-      uniform float uDividerTwo;
+      uniform float uDivider;
       uniform float uAngle;
       varying vec2 vUv;
       void main() {
         float shift = (0.5 - vUv.y) * (uResolution.y / uResolution.x) / tan(uAngle);
-        float splitOne = uDividerOne + shift;
-        float splitTwo = uDividerTwo + shift;
+        float split = uDivider + shift;
         float edge = 1.0 / uResolution.x;
-        float toMesh = smoothstep(splitOne - edge, splitOne + edge, vUv.x);
-        float toSimulation = smoothstep(splitTwo - edge, splitTwo + edge, vUv.x);
-        vec4 color = mix(texture2D(uShaded, vUv), texture2D(uMesh, vUv), toMesh);
-        color = mix(color, texture2D(uSimulation, vUv), toSimulation);
+        float toSimulation = smoothstep(split - edge, split + edge, vUv.x);
+        vec4 color = mix(texture2D(uMesh, vUv), texture2D(uSimulation, vUv), toSimulation);
         gl_FragColor = color;
         #include <colorspace_fragment>
       }
@@ -562,20 +383,14 @@ function fitSharedCamera(baseScene, simulationScene, cameraTarget) {
 
 function renderComparison(state) {
   if (!comparisonReady) return;
-  state.compositeMaterial.uniforms.uDividerOne.value = dividerPositions[0];
-  state.compositeMaterial.uniforms.uDividerTwo.value = dividerPositions[1];
+  state.compositeMaterial.uniforms.uDivider.value = dividerPositions[0];
   state.compositeMaterial.uniforms.uAngle.value = THREE.MathUtils.degToRad(ANGLE_DEG);
 
   baseModel.visible = true;
   simulationModel.visible = false;
-  restoreBaseMaterials();
+  setBaseMaterialMode("flat");
   renderer.setRenderTarget(renderTargets[0]);
   renderer.clear(true, true, true);
-  renderer.render(state.scene, camera);
-
-  renderer.setRenderTarget(renderTargets[1]);
-  renderer.clear(true, true, true);
-  setBaseMaterialMode("flat");
   renderer.render(state.scene, camera);
   setBaseMaterialMode("wire");
   renderer.autoClear = false;
@@ -585,7 +400,7 @@ function renderComparison(state) {
 
   baseModel.visible = false;
   simulationModel.visible = true;
-  renderer.setRenderTarget(renderTargets[2]);
+  renderer.setRenderTarget(renderTargets[1]);
   renderer.clear(true, true, true);
   renderer.render(state.scene, camera);
 
@@ -650,17 +465,17 @@ async function startComparison() {
     setComparisonStatus("LOADING MODELS");
     comparisonLoading.hidden = false;
     comparisonError.hidden = true;
-    const modelProgress = { CAD: "queued", simulation: "queued" };
+    const modelProgress = { mesh: "queued", simulation: "queued" };
     const updateModelProgress = (label, status) => {
       modelProgress[label] = status;
-      comparisonLoadingText.textContent = `CAD ${modelProgress.CAD}  /  SIMULATION ${modelProgress.simulation}`;
-      updateLoadingProgress(label === "CAD" ? comparisonCadProgress : comparisonSimulationProgress, status);
+      comparisonLoadingText.textContent = `MESH ${modelProgress.mesh}  /  SIMULATION ${modelProgress.simulation}`;
+      updateLoadingProgress(label === "mesh" ? comparisonMeshProgress : comparisonSimulationProgress, status);
     };
-    updateModelProgress("CAD", "queued");
+    updateModelProgress("mesh", "queued");
     updateModelProgress("simulation", "queued");
 
     const [baseGltf, simulationGltf] = await Promise.all([
-      loadGltf(loader, "./assets/gannet.glb", "CAD", updateModelProgress),
+      loadGltf(loader, "./assets/gannet.glb", "mesh", updateModelProgress),
       loadGltf(loader, "./assets/gannet_simulation.glb", "simulation", updateModelProgress),
     ]);
     comparisonLoadingText.textContent = "Preparing the shared comparison…";
@@ -673,7 +488,7 @@ async function startComparison() {
     if (baseAction && simulationAction) setComparisonAnimationPlaying(true);
     comparisonReady = true;
     comparisonLoading.hidden = true;
-    setComparisonStatus("ALL THREE VIEWS READY");
+    setComparisonStatus("BOTH VIEWS READY");
     startRenderLoop(comparisonState);
   } catch (error) {
     setComparisonError(error, "One or more model files could not be loaded. Check the GLB files and try again.");
@@ -710,15 +525,11 @@ function disposeComparison() {
   if (intersectionObserver) intersectionObserver.disconnect();
   if (comparisonVisibilityObserver) comparisonVisibilityObserver.disconnect();
   if (resizeObserver) resizeObserver.disconnect();
-  landingGearResizeObserver?.disconnect();
-  landingGearControls?.dispose();
-  landingGearRenderer?.dispose();
   controls?.dispose();
   renderer?.dispose();
   renderTargets.forEach((target) => target.dispose());
 }
 
-startLandingGearViewer();
 installDividerControls();
 if ("IntersectionObserver" in window) {
   intersectionObserver = new IntersectionObserver((entries) => {
@@ -793,7 +604,7 @@ function createProjectViewport(canvas, viewer, render, { transparent = false } =
   controls.minPolarAngle = 0.15;
   controls.maxPolarAngle = Math.PI * 0.85;
 
-  const state = { renderer, scene, camera, controls, viewer, ready: false, roots: [], savedCamera: null, savedTarget: null, resizeObserver: null };
+  const state = { renderer, scene, camera, controls, viewer, ready: false, roots: [], savedCamera: null, savedTarget: null, resizeObserver: null, refit: null };
   controls.addEventListener("change", () => render(state));
   const resize = () => {
     const rect = viewer.getBoundingClientRect();
@@ -801,7 +612,10 @@ function createProjectViewport(canvas, viewer, render, { transparent = false } =
     renderer.setSize(rect.width, rect.height, false);
     camera.aspect = rect.width / rect.height;
     camera.updateProjectionMatrix();
-    if (state.ready) render(state);
+    if (state.ready) {
+      state.refit?.();
+      render(state);
+    }
   };
   state.resizeObserver = new ResizeObserver(resize);
   state.resizeObserver.observe(viewer);
@@ -819,7 +633,7 @@ function centerProjectModel(model) {
   return new THREE.Box3().setFromObject(model);
 }
 
-function fitProjectModels(state, models, zoom = 1) {
+function fitProjectModels(state, models, zoom = 1, cameraDirection = new THREE.Vector3(-2.8, 1.25, 2.7), screenCenterX = 0.5) {
   let radius = 0;
   models.forEach((model) => {
     const bounds = centerProjectModel(model);
@@ -831,12 +645,15 @@ function fitProjectModels(state, models, zoom = 1) {
   const horizontalHalfFov = Math.atan(Math.tan(verticalHalfFov) * Math.max(state.camera.aspect, 0.1));
   const limitingHalfFov = Math.min(verticalHalfFov, horizontalHalfFov);
   const distance = (radius / Math.sin(limitingHalfFov)) * 1.18 / zoom;
-  const direction = new THREE.Vector3(-2.8, 1.25, 2.7).normalize();
-  state.camera.position.copy(direction.multiplyScalar(distance));
+  const direction = cameraDirection.clone().normalize();
+  const forward = direction.clone().negate();
+  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+  const screenShift = (0.5 - screenCenterX) * 2 * distance * Math.tan(horizontalHalfFov);
+  state.camera.position.copy(direction.multiplyScalar(distance)).addScaledVector(right, screenShift);
   state.camera.near = Math.max(radius / 1000, 0.01);
   state.camera.far = radius * 30;
   state.camera.updateProjectionMatrix();
-  state.controls.target.set(0, 0, 0);
+  state.controls.target.copy(right.multiplyScalar(screenShift));
   state.controls.minDistance = radius * 0.75;
   state.controls.maxDistance = radius * 8;
   state.savedCamera = state.camera.position.clone();
@@ -844,7 +661,7 @@ function fitProjectModels(state, models, zoom = 1) {
   state.controls.update();
 }
 
-function fitProjectModelToViewport(state, model, screenFraction = 0.58) {
+function fitProjectModelToViewport(state, model, screenFraction = 0.58, screenCenterX = 0.5) {
   const bounds = centerProjectModel(model);
   const center = bounds.getCenter(new THREE.Vector3());
   const radius = Math.max(bounds.getBoundingSphere(new THREE.Sphere()).radius, 0.1);
@@ -869,11 +686,12 @@ function fitProjectModelToViewport(state, model, screenFraction = 0.58) {
   }
 
   distance = Math.max(distance, radius * 0.5);
-  state.camera.position.copy(center).addScaledVector(direction, distance);
+  const screenShift = (0.5 - screenCenterX) * 2 * distance * Math.tan(horizontalHalfFov);
+  state.camera.position.copy(center).addScaledVector(direction, distance).addScaledVector(right, screenShift);
   state.camera.near = Math.max(radius / 1000, 0.01);
   state.camera.far = Math.max(radius * 30, distance + radius * 2);
   state.camera.updateProjectionMatrix();
-  state.controls.target.copy(center);
+  state.controls.target.copy(center).addScaledVector(right, screenShift);
   state.controls.minDistance = Math.min(radius * 0.75, distance * 0.8);
   state.controls.maxDistance = radius * 8;
   state.savedCamera = state.camera.position.clone();
@@ -1047,7 +865,7 @@ function renderSingleProjectModel(state) {
 function updateAircraftPlayButton() {
   const button = document.querySelector("#aircraft-play");
   if (!button) return;
-  button.textContent = aircraftAnimationPaused ? "PLAY ANIMATION  ▶" : "PAUSE ANIMATION  ‖";
+  button.textContent = aircraftAnimationPaused ? "PLAY ANIMATION  \u25B6" : "PAUSE ANIMATION  \u2016";
   button.setAttribute("aria-label", aircraftAnimationPaused ? "Play aircraft animation" : "Pause aircraft animation");
   button.title = aircraftAnimationPaused ? "Play animation" : "Pause animation";
 }
@@ -1096,6 +914,7 @@ async function startAircraftViewer() {
   const progressBar = document.querySelector("#aircraft-progress");
   const error = document.querySelector("#aircraft-error");
   const play = document.querySelector("#aircraft-play");
+  const reset = document.querySelector("#aircraft-reset");
   let state;
   try {
     state = createProjectViewport(canvas, viewer, renderSingleProjectModel, { transparent: true });
@@ -1109,9 +928,11 @@ async function startAircraftViewer() {
     root.add(gltf.scene);
     state.scene.add(root);
     state.roots = [root];
-    fitProjectModels(state, state.roots, 3);
+    state.refit = () => fitProjectModels(state, state.roots, 3, new THREE.Vector3(-4.5, 1.4, 1.2), 0.38);
+    state.refit();
     state.ready = true;
     loading.hidden = true;
+    reset.disabled = false;
     aircraftMixer = new THREE.AnimationMixer(gltf.scene);
     if (gltf.animations.length) {
       aircraftAction = aircraftMixer.clipAction(gltf.animations[0]);
@@ -1155,6 +976,13 @@ function observeAircraftViewer(element) {
 }
 
 document.querySelector("#aircraft-play").addEventListener("click", () => setAircraftAnimationPaused(!aircraftAnimationPaused));
+document.querySelector("#aircraft-reset").addEventListener("click", () => {
+  const state = projectViewerStates.find((entry) => entry.viewer.id === "aircraft-stage");
+  if (!state?.savedCamera || !state.savedTarget) return;
+  state.camera.position.copy(state.savedCamera);
+  state.controls.target.copy(state.savedTarget);
+  state.controls.update();
+});
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     stopAircraftAnimationLoop();
@@ -1360,8 +1188,490 @@ observeProjectViewer(document.querySelector("#uav-viewer"), startUavViewer);
 observeAircraftViewer(document.querySelector("#aircraft-stage"));
 window.addEventListener("pagehide", disposeProjectViewers);
 
+function installLeadershipGrowthNotes() {
+  const timeline = document.querySelector(".profile-timeline");
+  if (!timeline) return;
+
+  const triggers = Array.from(timeline.querySelectorAll(".profile-timeline-trigger"));
+  const syncTrigger = (trigger) => {
+    const pointerHover = trigger.matches(":hover") && trigger.dataset.pointerType !== "touch";
+    const open = trigger.dataset.pinned === "true" || pointerHover || trigger.matches(":focus-visible");
+    trigger.closest(".profile-timeline-role")?.classList.toggle("is-open", open);
+    trigger.setAttribute("aria-expanded", String(open));
+  };
+
+  triggers.forEach((trigger) => {
+    trigger.addEventListener("pointerenter", (event) => {
+      trigger.dataset.pointerType = event.pointerType;
+      syncTrigger(trigger);
+    });
+    trigger.addEventListener("pointerleave", () => syncTrigger(trigger));
+    trigger.addEventListener("focus", () => syncTrigger(trigger));
+    trigger.addEventListener("blur", () => syncTrigger(trigger));
+    trigger.addEventListener("click", () => {
+      triggers.forEach((other) => {
+        if (other !== trigger && other.dataset.pinned === "true") {
+          other.dataset.pinned = "false";
+          syncTrigger(other);
+        }
+      });
+      trigger.dataset.pinned = trigger.dataset.pinned === "true" ? "false" : "true";
+      syncTrigger(trigger);
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    if (timeline.contains(event.target)) return;
+    triggers.forEach((trigger) => {
+      if (trigger.dataset.pinned === "true") {
+        trigger.dataset.pinned = "false";
+        syncTrigger(trigger);
+      }
+    });
+  });
+}
+
+installLeadershipGrowthNotes();
+function installCoreSkillDeck() {
+  const deck = document.querySelector(".profile-skill-deck");
+  if (!deck) return;
+
+  const panels = Array.from(deck.querySelectorAll(".profile-skill-panel"));
+  let pinnedPanel = panels.find((panel) => panel.classList.contains("is-active")) || panels[0];
+  let lastPointerPosition = null;
+  let hoverTimer = 0;
+  const activePanel = () => panels.find((panel) => panel.classList.contains("is-active"));
+  const cancelHover = () => {
+    window.clearTimeout(hoverTimer);
+    hoverTimer = 0;
+  };
+  const activate = (panel) => {
+    if (!panel || panel === activePanel()) return;
+    panels.forEach((item) => {
+      const active = item === panel;
+      item.classList.toggle("is-active", active);
+      item.querySelector(".profile-skill-trigger")?.setAttribute("aria-expanded", String(active));
+    });
+  };
+
+  deck.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const moved = !lastPointerPosition || Math.hypot(event.clientX - lastPointerPosition.x, event.clientY - lastPointerPosition.y) >= 2;
+    if (!moved) return;
+    lastPointerPosition = { x: event.clientX, y: event.clientY };
+
+    const panel = event.target.closest(".profile-skill-panel");
+    if (!panel || !deck.contains(panel)) return;
+    if (panel === activePanel()) {
+      cancelHover();
+      return;
+    }
+
+    cancelHover();
+    const x = event.clientX;
+    const y = event.clientY;
+    hoverTimer = window.setTimeout(() => {
+      const elementUnderPointer = document.elementFromPoint(x, y);
+      const hoveredPanel = elementUnderPointer?.closest(".profile-skill-panel");
+      if (hoveredPanel === panel && deck.contains(hoveredPanel)) activate(panel);
+      hoverTimer = 0;
+    }, 40);
+  });
+
+  deck.addEventListener("pointerleave", () => {
+    cancelHover();
+    lastPointerPosition = null;
+    const focusedControl = deck.querySelector(".profile-skill-trigger:focus-visible, .profile-skill-tool:focus-visible");
+    activate(focusedControl?.closest(".profile-skill-panel") || pinnedPanel);
+  });
+  deck.addEventListener("focusin", (event) => {
+    cancelHover();
+    const panel = event.target.closest(".profile-skill-panel");
+    if (panel) activate(panel);
+  });
+  deck.addEventListener("focusout", (event) => {
+    if (!deck.contains(event.relatedTarget)) activate(pinnedPanel);
+  });
+  deck.addEventListener("click", (event) => {
+    const panel = event.target.closest(".profile-skill-panel");
+    if (!panel) return;
+    pinnedPanel = panel;
+    activate(panel);
+  });
+}
+
+installCoreSkillDeck();
+function installParticleDriftBackground() {
+  const section = document.querySelector(".python-projects-section");
+  const canvas = section?.querySelector(".particle-drift-canvas");
+  if (!section || !canvas) return;
+
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) return;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const characters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*()";
+  const palette = ["#55b8dc", "#d3ef66"];
+  let width = 1;
+  let height = 1;
+  let dpr = 1;
+  let nodes = [];
+  let beams = [];
+  let frame = 0;
+  let lastFrame = 0;
+  let nearViewport = false;
+  const mouse = { x: -1000, y: -1000, active: false };
+  const randomCharacter = () => characters[Math.floor(Math.random() * characters.length)];
+
+  const initializeParticles = () => {
+    nodes = Array.from({ length: 90 }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vy: Math.random() * 0.4 + 0.1,
+      character: randomCharacter()
+    }));
+    beams = Array.from({ length: 25 }, (_, index) => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      length: Math.random() * 100 + 50,
+      speed: Math.random() * 6 + 3,
+      opacity: Math.random() * 0.38 + 0.22,
+      color: palette[index % palette.length]
+    }));
+  };
+
+  const resize = () => {
+    const bounds = section.getBoundingClientRect();
+    width = Math.max(bounds.width, 1);
+    height = Math.max(bounds.height, 1);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    initializeParticles();
+  };
+
+  const draw = (timestamp) => {
+    if (reducedMotion.matches || document.hidden || !nearViewport) {
+      frame = 0;
+      return;
+    }
+    const step = lastFrame ? Math.min((timestamp - lastFrame) / 16.67, 2) : 1;
+    lastFrame = timestamp;
+    context.clearRect(0, 0, width, height);
+
+    beams.forEach((beam) => {
+      beam.y -= beam.speed * step;
+      if (beam.y + beam.length < 0) {
+        beam.y = height + 100;
+        beam.x = Math.random() * width;
+      }
+      const gradient = context.createLinearGradient(beam.x, beam.y, beam.x, beam.y + beam.length);
+      gradient.addColorStop(0, beam.color === palette[0]
+        ? `rgba(85, 184, 220, ${beam.opacity})`
+        : `rgba(211, 239, 102, ${beam.opacity * 0.72})`);
+      gradient.addColorStop(1, "rgba(17, 26, 42, 0)");
+      context.strokeStyle = gradient;
+      context.lineWidth = 1.2;
+      context.beginPath();
+      context.moveTo(beam.x, beam.y);
+      context.lineTo(beam.x, beam.y + beam.length);
+      context.stroke();
+    });
+
+    context.lineWidth = 0.55;
+    for (let i = 0; i < nodes.length; i++) {
+      const first = nodes[i];
+      for (let j = i + 1; j < nodes.length; j++) {
+        const second = nodes[j];
+        const distance = Math.hypot(first.x - second.x, first.y - second.y);
+        if (distance < 120) {
+          context.strokeStyle = `rgba(157, 183, 204, ${0.17 * (1 - distance / 120)})`;
+          context.beginPath();
+          context.moveTo(first.x, first.y);
+          context.lineTo(second.x, second.y);
+          context.stroke();
+        }
+      }
+    }
+
+    context.font = "12px ui-monospace, SFMono-Regular, Consolas, monospace";
+    context.textAlign = "center";
+    context.textBaseline = "middle";
+    nodes.forEach((node) => {
+      node.y += node.vy * step;
+      if (node.y > height + 20) {
+        node.y = -20;
+        node.x = Math.random() * width;
+      }
+      const distance = mouse.active ? Math.hypot(mouse.x - node.x, mouse.y - node.y) : Infinity;
+      if (distance < 180 || Math.random() > 0.98) node.character = randomCharacter();
+      if (distance < 180) {
+        context.strokeStyle = `rgba(85, 184, 220, ${0.48 * (1 - distance / 180)})`;
+        context.beginPath();
+        context.moveTo(node.x, node.y);
+        context.lineTo(mouse.x, mouse.y);
+        context.stroke();
+      }
+      context.fillStyle = distance < 180 ? "#55b8dc" : "rgba(174, 190, 208, 0.46)";
+      context.fillText(node.character, node.x, node.y);
+    });
+
+    frame = window.requestAnimationFrame(draw);
+  };
+
+  const start = () => {
+    if (frame || reducedMotion.matches || document.hidden || !nearViewport) return;
+    lastFrame = 0;
+    frame = window.requestAnimationFrame(draw);
+  };
+  const stop = () => {
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    lastFrame = 0;
+    mouse.active = false;
+  };
+
+  section.addEventListener("pointermove", (event) => {
+    const bounds = section.getBoundingClientRect();
+    mouse.x = event.clientX - bounds.left;
+    mouse.y = event.clientY - bounds.top;
+    mouse.active = true;
+  }, { passive: true });
+  section.addEventListener("pointerleave", () => { mouse.active = false; });
+  section.addEventListener("pointercancel", () => { mouse.active = false; });
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+
+  if ("ResizeObserver" in window) {
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(section);
+  }
+  if ("IntersectionObserver" in window) {
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      nearViewport = entries.some((entry) => entry.isIntersecting);
+      if (nearViewport) start();
+      else stop();
+    }, { rootMargin: "160px 0px", threshold: 0 });
+    intersectionObserver.observe(section);
+  } else {
+    nearViewport = true;
+  }
+
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) {
+      stop();
+      context.clearRect(0, 0, width, height);
+    } else start();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+  window.addEventListener("pagehide", stop);
+  window.addEventListener("pageshow", start);
+  if (nearViewport) start();
+}
+
+installParticleDriftBackground();
+function installFlowFieldBackground() {
+  const section = document.querySelector(".waves-background-section");
+  const canvas = section?.querySelector(".flow-field-canvas");
+  if (!section || !canvas) return;
+
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) return;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const palette = [
+    { r: 85, g: 184, b: 220 },
+    { r: 211, g: 239, b: 102 },
+    { r: 113, g: 145, b: 181 }
+  ];
+  let width = 0;
+  let height = 0;
+  let dpr = 1;
+  let particles = [];
+  let frame = 0;
+  let lastFrame = 0;
+  let elapsed = 0;
+  let nearViewport = false;
+  const mouse = { x: -9999, y: -9999, active: false };
+
+  function createNoise(seed) {
+    const f2 = 0.5 * (Math.sqrt(3) - 1);
+    const g2 = (3 - Math.sqrt(3)) / 6;
+    const gradients = [[1, 1], [-1, 1], [1, -1], [-1, -1], [1, 0], [-1, 0], [0, 1], [0, -1]];
+    const permutation = new Uint8Array(512);
+    const values = new Uint8Array(256);
+    let state = seed >>> 0;
+    for (let i = 0; i < 256; i++) values[i] = i;
+    for (let i = 255; i > 0; i--) {
+      state = (state * 1664525 + 1013904223) >>> 0;
+      const j = state % (i + 1);
+      [values[i], values[j]] = [values[j], values[i]];
+    }
+    for (let i = 0; i < 512; i++) permutation[i] = values[i & 255];
+
+    return (x, y) => {
+      const skew = (x + y) * f2;
+      const i = Math.floor(x + skew);
+      const j = Math.floor(y + skew);
+      const unskew = (i + j) * g2;
+      const x0 = x - (i - unskew);
+      const y0 = y - (j - unskew);
+      const i1 = x0 > y0 ? 1 : 0;
+      const j1 = x0 > y0 ? 0 : 1;
+      const x1 = x0 - i1 + g2;
+      const y1 = y0 - j1 + g2;
+      const x2 = x0 - 1 + 2 * g2;
+      const y2 = y0 - 1 + 2 * g2;
+      const ii = i & 255;
+      const jj = j & 255;
+      const contribution = (px, py, gi) => {
+        let attenuation = 0.5 - px * px - py * py;
+        if (attenuation < 0) return 0;
+        attenuation *= attenuation;
+        const gradient = gradients[gi & 7];
+        return attenuation * attenuation * (gradient[0] * px + gradient[1] * py);
+      };
+      const gi0 = permutation[ii + permutation[jj]];
+      const gi1 = permutation[ii + i1 + permutation[jj + j1]];
+      const gi2 = permutation[ii + 1 + permutation[jj + 1]];
+      return 70 * (contribution(x0, y0, gi0) + contribution(x1, y1, gi1) + contribution(x2, y2, gi2));
+    };
+  }
+
+  const noise = createNoise(42);
+  const randomParticle = () => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    speed: 0.4 + Math.random(),
+    alpha: 0.15 + Math.random() * 0.45,
+    size: 0.6 + Math.random() * 1.1
+  });
+  const resize = () => {
+    const bounds = section.getBoundingClientRect();
+    width = Math.max(1, bounds.width);
+    height = Math.max(1, bounds.height);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.min(1800, Math.max(450, Math.round(width * height / 450)));
+    particles = Array.from({ length: count }, randomParticle);
+  };
+
+  const colorAt = (value) => {
+    const position = ((value + 1) * 0.5) * (palette.length - 1);
+    const index = Math.min(Math.floor(position), palette.length - 2);
+    const blend = position - index;
+    const a = palette[index];
+    const b = palette[index + 1];
+    return `rgba(${Math.round(a.r + (b.r - a.r) * blend)}, ${Math.round(a.g + (b.g - a.g) * blend)}, ${Math.round(a.b + (b.b - a.b) * blend)},`;
+  };
+
+  const draw = (timestamp) => {
+    if (reducedMotion.matches || document.hidden || !nearViewport) {
+      frame = 0;
+      return;
+    }
+    const step = lastFrame ? Math.min((timestamp - lastFrame) / 16.67, 2) : 1;
+    lastFrame = timestamp;
+    elapsed += step;
+    context.fillStyle = "rgba(17, 26, 42, 0.055)";
+    context.fillRect(0, 0, width, height);
+    const time = elapsed * 0.00042;
+    const mouseRadius = 138;
+
+    for (const particle of particles) {
+      const nx = particle.x * 0.003;
+      const ny = particle.y * 0.003;
+      const angle = noise(nx + time, ny - time * 0.72) * Math.PI * 2;
+      let vx = Math.cos(angle) * particle.speed * step;
+      let vy = Math.sin(angle) * particle.speed * step;
+      if (mouse.active) {
+        const dx = particle.x - mouse.x;
+        const dy = particle.y - mouse.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < mouseRadius && distance > 0) {
+          const force = (1 - distance / mouseRadius) * 1.9 * step;
+          vx += (dx / distance) * force;
+          vy += (dy / distance) * force;
+        }
+      }
+      const previousX = particle.x;
+      const previousY = particle.y;
+      particle.x += vx;
+      particle.y += vy;
+      const color = colorAt(noise(nx * 1.55 + 43, ny * 1.55 + 43));
+      context.beginPath();
+      context.moveTo(previousX, previousY);
+      context.lineTo(particle.x, particle.y);
+      context.strokeStyle = `${color} ${particle.alpha})`;
+      context.lineWidth = particle.size;
+      context.stroke();
+      if (particle.x < -18 || particle.x > width + 18 || particle.y < -18 || particle.y > height + 18) {
+        particle.x = Math.random() * width;
+        particle.y = Math.random() * height;
+      }
+    }
+    frame = window.requestAnimationFrame(draw);
+  };
+
+  const start = () => {
+    if (frame || reducedMotion.matches || document.hidden || !nearViewport) return;
+    lastFrame = 0;
+    context.fillStyle = "#111a2a";
+    context.fillRect(0, 0, width, height);
+    frame = window.requestAnimationFrame(draw);
+  };
+  const stop = () => {
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    lastFrame = 0;
+    mouse.active = false;
+  };
+
+  canvas.addEventListener("pointermove", (event) => {
+    const bounds = canvas.getBoundingClientRect();
+    mouse.x = event.clientX - bounds.left;
+    mouse.y = event.clientY - bounds.top;
+    mouse.active = true;
+  }, { passive: true });
+  canvas.addEventListener("pointerleave", () => { mouse.active = false; });
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+
+  if ("ResizeObserver" in window) {
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(section);
+  }
+  if ("IntersectionObserver" in window) {
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      nearViewport = entries.some((entry) => entry.isIntersecting);
+      if (nearViewport) start();
+      else stop();
+    }, { rootMargin: "160px 0px", threshold: 0 });
+    intersectionObserver.observe(section);
+  } else {
+    nearViewport = true;
+  }
+
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) { stop(); context.clearRect(0, 0, width, height); }
+    else start();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+  window.addEventListener("pagehide", stop);
+  window.addEventListener("pageshow", start);
+  if (nearViewport) start();
+}
+
+installFlowFieldBackground();
 function installCardRevealObserver() {
-  const cards = document.querySelectorAll(".drawing-card, .software-card, .project-story");
+  const cards = document.querySelectorAll(".drawing-card, .project-story, .profile-detail-card");
   if (!cards.length || !("IntersectionObserver" in window) || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
   const observer = new IntersectionObserver((entries) => {

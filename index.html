@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#111a2a" />
-    <meta name="description" content="A CAD portfolio featuring 3D models, technical drawings, and digital projects." />
+    <meta name="description" content="Aircraft design, CAD assemblies, technical drawings, and engineering analysis by Rexus Gan, an aeronautical engineering graduate." />
     <script>
       if ("scrollRestoration" in history) history.scrollRestoration = "manual";
       window.addEventListener("pageshow", (event) => {
         if (!event.persisted && !location.hash) window.scrollTo(0, 0);
       });
     </script>
-    <title>Rexus Gan — CAD Portfolio</title>
+    <title>Rexus Gan — Aeronautical Engineering Portfolio</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -31,10 +31,11 @@
     <header class="site-header">
       <a class="wordmark" href="#top" aria-label="Rexus Gan home"><span class="wordmark-mark">R</span><span>REXUS GAN<span class="wordmark-dot">.</span></span></a>
       <nav class="main-nav" aria-label="Main navigation">
+        <a href="#work">CAD work</a>
         <a href="#about">Profile</a>
-        <a href="#work">Technical drawings</a>
-        <a href="#teaching">Skills &amp; tools</a>
-        <a href="#other-projects">Projects</a>
+        <a href="#teaching">Python Projects</a>
+        <a href="#cfd-simulation">CFD</a>
+        <a href="#other-projects">Research Studies</a>
       </nav>
       <a class="header-link" href="https://reinhardt0731.github.io/reinhardt.fulcrum/" target="_blank" rel="noreferrer">Fulcrum project <span aria-hidden="true">↗</span></a>
     </header>
@@ -42,23 +43,25 @@
     <main id="top">
       <section class="hero section-wrap" aria-labelledby="hero-title">
         <div class="hero-copy">
-          <p class="eyebrow"><span class="status-dot"></span> CAD PORTFOLIO <span class="eyebrow-line"></span> AERONAUTICAL ENGINEERING</p>
-          <h1 id="hero-title">Making ideas<br />work in <span>3D.</span></h1>
-          <p class="hero-lede">Selected CAD models, technical drawings, and digital projects, with a closer look at the process behind each one.</p>
+          <p class="eyebrow"><span class="status-dot"></span> AERONAUTICAL ENGINEERING <span class="eyebrow-line"></span> AIRCRAFT DESIGN &amp; CAD</p>
+          <h1 id="hero-title">Every aircraft<br />starts with <span>a question.</span></h1>
+          <p class="hero-lede">I follow that question through performance sizing and analysis to CAD models and drawings—making each design decision clear and inspectable.</p>
           <div class="hero-actions">
-            <a class="button button-primary" href="#work">View selected work <span aria-hidden="true">↓</span></a>
+            <a class="button button-primary" href="#work">Explore aircraft &amp; CAD work <span aria-hidden="true">↓</span></a>
+            <a class="text-link" href="#about">My background <span aria-hidden="true">↘</span></a>
           </div>
         </div>
-        <div class="hero-visual" aria-label="Interactive landing gear model">
+        <div class="hero-visual" aria-label="Interactive animated aircraft model">
           <div class="hero-model-frame">
-            <canvas id="landing-gear-canvas" aria-label="Interactive 3D model of a landing gear. Drag to orbit, scroll or pinch to zoom, and right-drag to pan."></canvas>
-            <div class="landing-gear-mode landing-gear-mode-left" aria-hidden="true">SHADED</div>
-            <div class="landing-gear-mode landing-gear-mode-right" aria-hidden="true">MESH</div>
-            <button id="landing-gear-divider" class="landing-gear-divider" type="button" role="slider" aria-label="Move divider between shaded and mesh views" aria-orientation="horizontal" aria-valuemin="20" aria-valuemax="80" aria-valuenow="50" title="Drag or use arrow keys to move divider"><span></span></button>
-            <div id="landing-gear-loading" class="hero-model-message" role="status" aria-live="polite"><span class="viewer-loading-stack"><span id="landing-gear-loading-text">Loading landing gear model…</span><span id="landing-gear-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="Landing gear model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></span></div>
-            <div id="landing-gear-error" class="hero-model-message hero-model-error" role="alert" hidden>Landing gear preview unavailable. <a href="./assets/Landing_Gear.glb" download>Download the GLB model.</a></div>
-            <button id="landing-gear-reset" class="hero-model-reset" type="button" aria-label="Reset landing gear view" title="Reset view">RESET VIEW</button>
-            <span class="hero-model-caption" aria-hidden="true">LANDING GEAR / INTERACTIVE MODEL</span>
+            <div id="aircraft-stage" class="hero-aircraft-stage" aria-label="Interactive animated aircraft model">
+              <canvas id="aircraft-canvas" aria-label="Animated aircraft model. Drag to orbit, scroll or pinch to zoom, and right-drag to pan."></canvas>
+            </div>
+            <div class="aircraft-stage-topline" aria-hidden="true"><span><i class="live-dot"></i> ANIMATED AIRCRAFT</span><span>3D / GLB</span></div>
+            <div id="aircraft-loading" class="aircraft-stage-message hero-model-message" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span id="aircraft-loading-text">Preparing the aircraft model…</span><span id="aircraft-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="Aircraft model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></div>
+            <div id="aircraft-error" class="aircraft-stage-message aircraft-stage-error hero-model-message hero-model-error" role="alert" hidden>Aircraft preview could not be loaded. <a href="./assets/other_projects/animated_aircraft.glb" download>Download the GLB model</a></div>
+            <span class="aircraft-stage-hint">DRAG TO ORBIT <i>·</i> SCROLL TO ZOOM <i>·</i> RIGHT-DRAG TO PAN</span>
+            <button id="aircraft-reset" class="hero-model-reset" type="button" aria-label="Reset aircraft view" title="Reset view" disabled>RESET VIEW</button>
+            <button id="aircraft-play" class="aircraft-play" type="button" aria-label="Pause aircraft animation" title="Pause animation" disabled hidden>PAUSE ANIMATION <span aria-hidden="true">Ⅱ</span></button>
           </div>
         </div>
         <div class="hero-index"><span>01 / 04</span><span class="index-rule"></span><span>DESIGN · DETAIL · EXPLAIN</span></div>
@@ -66,10 +69,9 @@
 
       <section id="about" class="profile-section section-wrap" aria-labelledby="profile-title">
         <div class="profile-intro">
-          <p class="eyebrow">PROFILE / AERONAUTICAL ENGINEERING</p>
-          <h2 id="profile-title">Engineering ideas,<br /><span>made clear.</span></h2>
+          <p class="eyebrow">01 / ABOUT</p>
+          <h2 id="profile-title">Engineering ideas, <span>made clear.</span></h2>
           <p class="profile-lede">I’m an aeronautical engineering graduate with experience in CAD, aircraft and UAV design, and technical communication.</p>
-          <p class="profile-description">I use conceptual design, Python-based calculations, parametric modeling, and simulation to solve engineering problems and communicate results clearly. I’m seeking opportunities to contribute these skills across engineering and technology teams, while developing practical, open-source CAD resources.</p>
           <div class="profile-actions">
             <a class="button button-primary" href="./Rexus_Aeronautical_Engineering_Resume.pdf" download="Rexus_Aeronautical_Engineering_Resume.pdf">Download résumé <span aria-hidden="true">↗</span></a>
             <a class="profile-email" href="mailto:rexusgan07@gmail.com">rexusgan07@gmail.com</a>
@@ -78,151 +80,139 @@
         <div class="profile-details">
           <article class="profile-detail-card">
             <p class="eyebrow">EDUCATION</p>
-            <h3>Bachelor of Science<br />in Aeronautical Engineering</h3>
-            <p>Mats College of Technology <span>·</span> 2026</p>
+            <h3>Bachelor of Science in<br />Aeronautical Engineering</h3>
+            <p>Mats College of Technology <span>&middot;</span> 2026</p>
           </article>
           <article class="profile-detail-card">
-            <p class="eyebrow">CORE ENGINEERING SKILLS</p>
-            <ul class="profile-skill-list">
-              <li>Parametric CAD and 3D assemblies</li>
-              <li>Aircraft and UAV conceptual design</li>
-              <li>Weight, airfoil, and climb-performance calculations</li>
-              <li>Python automation and CFD fundamentals</li>
-            </ul>
+            <p class="eyebrow">LICENSURE</p>
+            <h3 class="profile-score">87.60%</h3>
+            <p>Licensed Aeronautical Engineer <span>&middot;</span> AELE 2026</p>
           </article>
-          <article class="profile-detail-card profile-leadership-card">
-            <p class="eyebrow">LEADERSHIP &amp; AFFILIATIONS</p>
-            <h3>Student organization experience</h3>
-            <ul class="profile-affiliation-list">
-              <li><span class="profile-affiliation-org">Society of Aerospace Engineering of the Philippines (SAEP SCF)</span><div class="profile-affiliation-meta"><span class="profile-affiliation-role">Education and Research Director</span><span class="profile-affiliation-dates">2021&ndash;2022</span></div></li>
-              <li><span class="profile-affiliation-org">Mindanao Aeronautical Engineering Student Organization (MAESO)</span><div class="profile-affiliation-meta"><span class="profile-affiliation-role">1st Year Representative</span><span class="profile-affiliation-dates">2021&ndash;2022</span></div></li>
-              <li><span class="profile-affiliation-org">Mindanao Aeronautical Engineering Student Organization (MAESO)</span><div class="profile-affiliation-meta"><span class="profile-affiliation-role">2nd Year Representative</span><span class="profile-affiliation-dates">2022&ndash;2023</span></div></li>
-              <li><span class="profile-affiliation-org">Mindanao Aeronautical Engineering Student Organization (MAESO)</span><div class="profile-affiliation-meta"><span class="profile-affiliation-role">Education and Research Director</span><span class="profile-affiliation-dates">2024&ndash;2026</span></div></li>
-              <li><span class="profile-affiliation-org">Society of Engineering and Technology</span><div class="profile-affiliation-meta"><span class="profile-affiliation-role">Info Media</span><span class="profile-affiliation-dates">2025&ndash;2026</span></div></li>
-            </ul>
+          <article class="profile-detail-card profile-stats-card">
+            <p class="eyebrow">AELE 2026</p>
+            <h3>Licensure subject scores</h3>
+            <div class="profile-stats-axis" aria-hidden="true"><span>SUBJECT</span><div><span>0</span><span>50</span><span>100</span></div><span>SCORE</span></div>
+            <ol class="profile-stats-list" aria-label="Aeronautical Engineer Licensure Examination subject scores out of 100">
+              <li style="--score: 93"><span class="profile-stat-subject">Aerodynamics</span><span class="profile-stat-track" aria-hidden="true"><span></span></span><strong>93.00</strong></li>
+              <li style="--score: 93"><span class="profile-stat-subject">Mathematics</span><span class="profile-stat-track" aria-hidden="true"><span></span></span><strong>93.00</strong></li>
+              <li style="--score: 87"><span class="profile-stat-subject">Engineering Economics and Management, Laws and Ethics</span><span class="profile-stat-track" aria-hidden="true"><span></span></span><strong>87.00</strong></li>
+              <li style="--score: 85"><span class="profile-stat-subject">Aircraft Construction, Repair and Modification</span><span class="profile-stat-track" aria-hidden="true"><span></span></span><strong>85.00</strong></li>
+              <li style="--score: 84"><span class="profile-stat-subject">Aircraft Structure and Design</span><span class="profile-stat-track" aria-hidden="true"><span></span></span><strong>84.00</strong></li>
+              <li style="--score: 84"><span class="profile-stat-subject">Aircraft Power Plant</span><span class="profile-stat-track" aria-hidden="true"><span></span></span><strong>84.00</strong></li>
+            </ol>
           </article>
         </div>
+        <article class="profile-detail-card profile-leadership-card">
+          <div class="profile-leadership-heading"><p class="eyebrow">LEADERSHIP &amp; AFFILIATIONS</p><span>2021 <i aria-hidden="true">→</i> 2026</span></div>
+          <p class="profile-timeline-hint">Hover or focus a role to see how it contributed to my growth. Tap to open on touch screens.</p>
+          <div class="profile-timeline-scroll" tabindex="0" aria-label="Leadership experience timeline. Scroll horizontally to explore on narrow screens.">
+            <div class="profile-timeline" role="table" aria-label="Leadership experience from 2021 to 2026">
+              <div class="profile-timeline-years" role="row"><span role="columnheader"></span><span role="columnheader">2021–22</span><span role="columnheader">2022–23</span><span role="columnheader">2023–24</span><span role="columnheader">2024–25</span><span role="columnheader">2025–26</span></div>
+              <div class="profile-timeline-row" role="row">
+                <div class="profile-affiliation-org" role="rowheader">Society of Aerospace Engineering of the Philippines<small>SAEP SCF</small></div>
+                <div class="profile-timeline-role" role="cell" style="--start: 2; --span: 1"><button class="profile-timeline-trigger" type="button" aria-label="Education and Research Director, 2021 to 2022. View growth note." aria-expanded="false" aria-controls="growth-saep" aria-describedby="growth-saep"><span class="profile-timeline-title">Education and Research Director</span><small>2021–2022</small><span class="profile-growth-note" id="growth-saep">I learned to guide research work and make technical learning easier for others.</span></button></div>
+              </div>
+              <div class="profile-timeline-row" role="row">
+                <div class="profile-affiliation-org" role="rowheader">Mindanao Aeronautical Engineering Student Organization<small>MAESO</small></div>
+                <div class="profile-timeline-role" role="cell" style="--start: 2; --span: 1"><button class="profile-timeline-trigger" type="button" aria-label="1st Year Representative, 2021 to 2022. View growth note." aria-expanded="false" aria-controls="growth-maeso-first" aria-describedby="growth-maeso-first"><span class="profile-timeline-title">1st Year Representative</span><small>2021–2022</small><span class="profile-growth-note" id="growth-maeso-first">I built confidence listening to classmates and representing their needs.</span></button></div>
+                <div class="profile-timeline-role" role="cell" style="--start: 3; --span: 1"><button class="profile-timeline-trigger" type="button" aria-label="2nd Year Representative, 2022 to 2023. View growth note." aria-expanded="false" aria-controls="growth-maeso-second" aria-describedby="growth-maeso-second"><span class="profile-timeline-title">2nd Year Representative</span><small>2022–2023</small><span class="profile-growth-note" id="growth-maeso-second">I strengthened follow-through and collaboration by continuing as a student representative.</span></button></div>
+                <div class="profile-timeline-role profile-timeline-role-current" role="cell" style="--start: 5; --span: 2"><button class="profile-timeline-trigger" type="button" aria-label="Education and Research Director, 2024 to 2026. View growth note." aria-expanded="false" aria-controls="growth-maeso-director" aria-describedby="growth-maeso-director"><span class="profile-timeline-title">Education and Research Director</span><small>2024–2026</small><span class="profile-growth-note" id="growth-maeso-director">I grew in planning learning activities, coordinating research, and supporting other students.</span></button></div>
+              </div>
+              <div class="profile-timeline-row" role="row">
+                <div class="profile-affiliation-org" role="rowheader">Society of Engineering and Technology<small>SET</small></div>
+                <div class="profile-timeline-role" role="cell" style="--start: 6; --span: 1"><button class="profile-timeline-trigger" type="button" aria-label="Info Media, 2025 to 2026. View growth note." aria-expanded="false" aria-controls="growth-set" aria-describedby="growth-set"><span class="profile-timeline-title">Info Media</span><small>2025–2026</small><span class="profile-growth-note" id="growth-set">I developed visual communication skills by turning organization updates into accessible media.</span></button></div>
+              </div>
+            </div>
+          </div>
+        </article>
+        <article class="profile-detail-card profile-skills-card">
+          <p class="eyebrow">CORE ENGINEERING SKILLS</p>
+          <div class="profile-skill-deck" role="group" aria-label="Core engineering skills">
+            <section class="profile-skill-panel is-active" data-skill-art="cad">
+              <button class="profile-skill-trigger" type="button" aria-label="Parametric CAD, 3D Assemblies, and TechDraw" aria-expanded="true" aria-controls="profile-skill-cad-detail">
+                <span class="profile-skill-index">01</span><span class="profile-skill-compact">CAD / TECHDRAW</span>
+              </button>
+              <div class="profile-skill-panel-content" id="profile-skill-cad-detail" role="group" aria-label="CAD and modeling skills">
+                <span class="profile-skill-category">DESIGN &amp; DOCUMENTATION</span>
+                <strong>Parametric CAD, 3D Assemblies, and TechDraw</strong>
+                <span class="profile-skill-description">Parametric models, multi-part assemblies, and engineering drawing sheets.</span>
+                <ul class="profile-skill-tools" aria-label="CAD and modeling software">
+                  <li><a class="profile-skill-tool" href="https://www.blender.org/" target="_blank" rel="noopener noreferrer" aria-label="Blender website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/blender.png" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><span>Blender</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://www.freecad.org/" target="_blank" rel="noopener noreferrer" aria-label="FreeCAD website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/freecad.svg" alt="" width="1800" height="480" loading="lazy" decoding="async"></span><span>FreeCAD</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://www.solidworks.com/" target="_blank" rel="noopener noreferrer" aria-label="SOLIDWORKS website, opens in a new tab"><span class="profile-skill-tool-mark profile-skill-wordmark">SOLIDWORKS</span><span>SOLIDWORKS</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://openvsp.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenVSP website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/openvsp.png" alt="" width="850" height="253" loading="lazy" decoding="async"></span><span>OpenVSP</span></a></li>
+                </ul>
+              </div>
+            </section>
+            <section class="profile-skill-panel" data-skill-art="python">
+              <button class="profile-skill-trigger" type="button" aria-label="Python Automation" aria-expanded="false" aria-controls="profile-skill-python-detail">
+                <span class="profile-skill-index">02</span><span class="profile-skill-compact">PYTHON</span>
+              </button>
+              <div class="profile-skill-panel-content" id="profile-skill-python-detail" role="group" aria-label="Python automation skills">
+                <span class="profile-skill-category">PROGRAMMING</span>
+                <strong>Python Automation</strong>
+                <span class="profile-skill-description">Scripts for repeatable calculations and engineering tasks.</span>
+                <ul class="profile-skill-tools" aria-label="Programming software">
+                  <li><a class="profile-skill-tool" href="https://www.python.org/" target="_blank" rel="noopener noreferrer" aria-label="Python website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/python.svg" alt="" width="553" height="164" loading="lazy" decoding="async"></span><span>Python</span></a></li>
+                </ul>
+              </div>
+            </section>
+            <section class="profile-skill-panel" data-skill-art="cfd">
+              <button class="profile-skill-trigger" type="button" aria-label="CFD External Aerodynamics" aria-expanded="false" aria-controls="profile-skill-cfd-detail">
+                <span class="profile-skill-index">03</span><span class="profile-skill-compact">CFD</span>
+              </button>
+              <div class="profile-skill-panel-content" id="profile-skill-cfd-detail" role="group" aria-label="CFD and external aerodynamics skills">
+                <span class="profile-skill-category">AERODYNAMICS</span>
+                <strong>CFD External Aerodynamics</strong>
+                <span class="profile-skill-description">Computational analysis of airflow around external surfaces.</span>
+                <ul class="profile-skill-tools" aria-label="Analysis and simulation software">
+                  <li><a class="profile-skill-tool" href="https://openfoam.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenFOAM website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/openfoam.svg" alt="" width="496" height="177" loading="lazy" decoding="async"></span><span>OpenFOAM</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://www.paraview.org/" target="_blank" rel="noopener noreferrer" aria-label="ParaView website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/paraview-wordmark.svg" alt="" width="462" height="106" loading="lazy" decoding="async"></span><span>ParaView</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://www.xflr5.tech/xflr5.html" target="_blank" rel="noopener noreferrer" aria-label="XFLR5 website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/xflr5-wordmark.svg" alt="" width="360" height="150" loading="lazy" decoding="async"></span><span>XFLR5</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://www.salome-platform.org/" target="_blank" rel="noopener noreferrer" aria-label="SALOME website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/salome-wordmark.svg" alt="" width="340" height="64" loading="lazy" decoding="async"></span><span>SALOME</span></a></li>
+                </ul>
+              </div>
+            </section>
+            <section class="profile-skill-panel" data-skill-art="writing">
+              <button class="profile-skill-trigger" type="button" aria-label="Academic Writing and Critical Thinking" aria-expanded="false" aria-controls="profile-skill-writing-detail">
+                <span class="profile-skill-index">04</span><span class="profile-skill-compact">WRITING</span>
+              </button>
+              <div class="profile-skill-panel-content" id="profile-skill-writing-detail" role="group" aria-label="Academic writing and critical thinking skills">
+                <span class="profile-skill-category">COMMUNICATION</span>
+                <strong>Academic Writing and Critical Thinking</strong>
+                <span class="profile-skill-description">Clear academic writing, evidence-based reasoning, and structured analysis.</span>
+                <ul class="profile-skill-tools" aria-label="Documentation and data software">
+                  <li><a class="profile-skill-tool" href="https://www.microsoft.com/microsoft-365/word" target="_blank" rel="noopener noreferrer" aria-label="Microsoft Word website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/microsoft-word.svg" alt="" width="35" height="36" loading="lazy" decoding="async"></span><span>Microsoft Word</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://www.microsoft.com/microsoft-365/excel" target="_blank" rel="noopener noreferrer" aria-label="Microsoft Excel website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/microsoft-excel.svg" alt="" width="35" height="36" loading="lazy" decoding="async"></span><span>Microsoft Excel</span></a></li>
+                </ul>
+              </div>
+            </section>
+            <section class="profile-skill-panel" data-skill-art="web">
+              <button class="profile-skill-trigger" type="button" aria-label="Static Web Design" aria-expanded="false" aria-controls="profile-skill-web-detail">
+                <span class="profile-skill-index">05</span><span class="profile-skill-compact">WEB DESIGN</span>
+              </button>
+              <div class="profile-skill-panel-content" id="profile-skill-web-detail" role="group" aria-label="Static web design skills">
+                <span class="profile-skill-category">WEB DEVELOPMENT</span>
+                <strong>Static Web Design</strong>
+                <span class="profile-skill-description">Built static webpages with HTML, CSS, and JavaScript, using Codex and Claude as AI-assisted development tools.</span>
+                <ul class="profile-skill-tools" aria-label="Web design tools and technologies">
+                  <li><a class="profile-skill-tool" href="https://openai.com/codex/" target="_blank" rel="noopener noreferrer" aria-label="OpenAI Codex website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/codex-wordmark.svg" alt="" width="400" height="100" loading="lazy" decoding="async"></span><span>Codex</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://claude.ai/" target="_blank" rel="noopener noreferrer" aria-label="Claude website, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/claude-wordmark.svg" alt="" width="300" height="100" loading="lazy" decoding="async"></span><span>Claude</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noopener noreferrer" aria-label="JavaScript documentation on MDN, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/javascript.svg" alt="" width="100" height="100" loading="lazy" decoding="async"></span><span>JavaScript</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank" rel="noopener noreferrer" aria-label="CSS documentation on MDN, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/css.svg" alt="" width="100" height="100" loading="lazy" decoding="async"></span><span>CSS</span></a></li>
+                  <li><a class="profile-skill-tool" href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank" rel="noopener noreferrer" aria-label="HTML documentation on MDN, opens in a new tab"><span class="profile-skill-tool-mark"><img src="./assets/software-logos/html.svg" alt="" width="100" height="100" loading="lazy" decoding="async"></span><span>HTML</span></a></li>
+                </ul>
+              </div>
+            </section>
+          </div>
+        </article>
       </section>
 
       <section id="work" class="work-section section-wrap">
         <div class="section-heading">
           <div><p class="eyebrow">01 — TECHNICAL DRAWINGS</p><h2>Designed to be <span>understood.</span></h2></div>
-          <p class="section-note">Explore the aircraft model, then browse the drawings that show its form, structure, and key details.</p>
+          <p class="section-note">Browse the drawings that show the aircraft form, structure, and key details.</p>
         </div>
-        <article class="feature-project">
-          <div class="project-number">PROJECT 001 <span>·</span> CAD ASSEMBLY</div>
-          <div class="feature-copy">
-            <div><h3>Aircraft design</h3><p>A detailed, multi-part aircraft model with 3D, front, side, and top-view drawings.</p></div>
-            <a class="round-link" href="#drawings" aria-label="View Gannet drawing sheets">↓</a>
-          </div>
-          <p class="aircraft-report-link"><a class="project-action-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf" target="_blank" rel="noreferrer">OPEN AIRCRAFT DESIGN PDF <span aria-hidden="true">&rarr;</span></a></p>
-          <div id="project-comparison" class="comparison-shell">
-            <div class="comparison-topline">
-              <span><i class="live-dot"></i> MATCHED MODEL COMPARISON</span>
-              <span id="comparison-status" role="status" aria-live="polite">WAITING TO LOAD</span>
-            </div>
-            <div id="comparison-viewer" class="comparison-viewer" aria-label="Three-way interactive Gannet aircraft comparison">
-              <canvas id="comparison-canvas" aria-label="Shaded, mesh, and simulation views of the Gannet aircraft"></canvas>
-              <div id="comparison-loading" class="comparison-message" role="status" aria-live="polite"><span class="comparison-loading-stack"><span class="comparison-loading-copy"><span class="loader-ring" aria-hidden="true"></span><span id="comparison-loading-text">Preparing the three views…</span></span><span class="comparison-progress-pair"><span><span>CAD</span><span id="comparison-cad-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="CAD model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></span><span><span>SIMULATION</span><span id="comparison-simulation-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="Simulation model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></span></span></span></div>
-              <div id="comparison-error" class="comparison-message comparison-error" role="alert" hidden>One or more model files could not be loaded. Check the GLB files and try again.</div>
-              <button id="divider-one" class="divider-handle" type="button" role="slider" aria-label="Move divider between shaded and mesh views" aria-orientation="horizontal" aria-valuemin="24" aria-valuemax="64" aria-valuenow="33" title="Drag or use arrow keys to move divider"><span class="divider-rule" aria-hidden="true"></span><span class="divider-grip" aria-hidden="true"><span></span></span></button>
-              <button id="divider-two" class="divider-handle" type="button" role="slider" aria-label="Move divider between mesh and simulation views" aria-orientation="horizontal" aria-valuemin="36" aria-valuemax="76" aria-valuenow="67" title="Drag or use arrow keys to move divider"><span class="divider-rule" aria-hidden="true"></span><span class="divider-grip" aria-hidden="true"><span></span></span></button>
-              <div class="comparison-corner" aria-hidden="true">GANNET XT0731<br />CAMERA / SHARED</div>
-            </div>
-            <div class="comparison-legend" aria-label="Comparison render modes">
-              <div><span class="legend-index">01</span><span><b>SHADED</b><small>Parametric CAD model</small></span></div>
-              <div><span class="legend-index">02</span><span><b>MESH</b><small>Mesh generation</small></span></div>
-              <div><span class="legend-index">03</span><span><b>SIMULATION</b><small>Simulation results</small></span></div>
-            </div>
-            <div class="comparison-toolbar">
-              <span class="viewer-hint"><span class="mouse-glyph">↗</span> DRAG TO ORBIT <span class="hint-separator">·</span> SCROLL TO ZOOM <span class="hint-separator">·</span> RIGHT-DRAG TO PAN</span>
-              <div class="viewer-controls" aria-label="Comparison controls">
-                <button id="comparison-home" class="icon-button" type="button" aria-label="Reset comparison camera" title="Reset view">⌂</button>
-                <button id="comparison-play" class="icon-button" type="button" aria-label="Play synchronized propeller animation" title="Play animation" disabled>▶</button>
-              </div>
-            </div>
-          </div>
-          <section class="aircraft-design-case-study" aria-labelledby="aircraft-design-case-study-title">
-            <div class="aircraft-design-case-study-heading">
-              <p class="eyebrow">AIRCRAFT DESIGN / ANALYSIS</p>
-              <h4 id="aircraft-design-case-study-title">From performance requirements to an optimized wing.</h4>
-              <p class="aircraft-design-case-study-intro">GANNET-T731 is a trainer-aircraft concept developed from client-defined performance requirements. The study brings together constraint-based sizing, propeller analysis, weighted airfoil selection, and aerodynamic wing optimization.</p>
-            </div>
-            <div class="aircraft-case-study-list">
-              <article class="aircraft-case-study-card">
-                <div class="aircraft-case-study-copy">
-                  <p class="eyebrow">01 / AIRFOIL SELECTION</p>
-                  <h5>Balance aerodynamic performance and structural needs.</h5>
-                  <p>I set custom weights for maximum lift, minimum drag, lift-to-drag ratio, thickness, pitching moment, and angle-of-attack margin for each wing section. This let me compare candidate airfoils by both aerodynamic performance and the greater thickness required near the wing root.</p>
-                </div>
-                <div class="aircraft-case-study-visuals">
-                  <figure class="aircraft-study-figure">
-                    <a class="aircraft-study-image-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=31" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to Figure 3.5 on PDF page 31">
-                      <img src="./assets/other_projects/gannet-design-figures/page-31.webp" alt="Figure 3.5 table of airfoil performance criteria weighted separately for the root, middle, and tip wing sections." width="1030" height="440" loading="lazy" decoding="async">
-                    </a>
-                    <figcaption><span>FIGURE 3.5 · OPTIMIZATION WEIGHT DISTRIBUTION</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=31" target="_blank" rel="noreferrer">OPEN PDF PAGE 31 <span aria-hidden="true">↗</span></a></figcaption>
-                  </figure>
-                </div>
-              </article>
-
-              <article class="aircraft-case-study-card">
-                <div class="aircraft-case-study-copy">
-                  <p class="eyebrow">02 / PROPELLER &amp; EXCESS POWER</p>
-                  <h5>Relate propeller performance to climb capability.</h5>
-                  <p>Excess power is the difference between available and required power. Available power depends on propeller efficiency and advance ratio; the efficiency curves show how that relationship changes with blade angle and feeds into the aircraft performance calculations.</p>
-                </div>
-                <div class="aircraft-case-study-visuals aircraft-case-study-visual-pair">
-                  <figure class="aircraft-study-figure">
-                    <a class="aircraft-study-image-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=95" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to the excess-power equation on PDF page 95">
-                      <img src="./assets/other_projects/gannet-design-figures/page-95.webp" alt="The report's excess-power equation, E equals available power as a function of propeller efficiency and advance ratio minus required power, followed by an explanation of the relationship." width="1046" height="388" loading="lazy" decoding="async">
-                    </a>
-                    <figcaption><span>EXCESS-POWER RELATION</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=95" target="_blank" rel="noreferrer">OPEN PDF PAGE 95 <span aria-hidden="true">↗</span></a></figcaption>
-                  </figure>
-                  <figure class="aircraft-study-figure">
-                    <a class="aircraft-study-image-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=88" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to Figure 6.2 on PDF page 88">
-                      <img src="./assets/other_projects/gannet-design-figures/page-88.webp" alt="Figure 6.2 chart of propeller efficiency versus advance ratio, with separate curves for blade angles from 15 to 45 degrees." width="927" height="421" loading="lazy" decoding="async">
-                    </a>
-                    <figcaption><span>FIGURE 6.2 · EFFICIENCY VS. ADVANCE RATIO</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=88" target="_blank" rel="noreferrer">OPEN PDF PAGE 88 <span aria-hidden="true">↗</span></a></figcaption>
-                  </figure>
-                </div>
-              </article>
-
-              <article class="aircraft-case-study-card">
-                <div class="aircraft-case-study-copy">
-                  <p class="eyebrow">03 / REQUIREMENT-BASED SIZING</p>
-                  <h5>Identify feasible wing and power loading.</h5>
-                  <p>Stall speed, maximum speed, take-off, rate of climb, and service-ceiling requirements define constraints on power loading versus wing loading. Their intersections set sizing limits. The report gives a maximum allowable wing loading of 14.89 lbf/ft² and a maximum power loading of 8.28 lbf/hp under their respective constraints.</p>
-                </div>
-                <div class="aircraft-case-study-visuals">
-                  <figure class="aircraft-study-figure">
-                    <a class="aircraft-study-image-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=42" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to the final sizing constraint plot on PDF page 42">
-                      <img src="./assets/other_projects/gannet-design-figures/page-42.webp" alt="Final aircraft-sizing plot showing stall-speed, maximum-speed, take-off, rate-of-climb, and service-ceiling constraints against wing loading and power loading." width="998" height="778" loading="lazy" decoding="async">
-                    </a>
-                    <figcaption><span>FINAL SIZING · WING LOADING VS. POWER LOADING</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=42" target="_blank" rel="noreferrer">OPEN PDF PAGE 42 <span aria-hidden="true">↗</span></a></figcaption>
-                  </figure>
-                </div>
-              </article>
-
-              <article class="aircraft-case-study-card">
-                <div class="aircraft-case-study-copy">
-                  <p class="eyebrow">04 / WING OPTIMIZATION</p>
-                  <h5>Measure how wing geometry affects aerodynamic response.</h5>
-                  <p>Response Surface Methodology compared taper ratio, wing twist, and section span distribution across aerodynamic responses. The report’s R² analysis identifies twist and section span distribution as the strongest influences; taper ratio has a smaller and less consistent effect in this study.</p>
-                </div>
-                <div class="aircraft-case-study-visuals">
-                  <figure class="aircraft-study-figure">
-                    <a class="aircraft-study-image-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=112" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to Figure 10.1 on PDF page 112">
-                      <img src="./assets/other_projects/gannet-design-figures/page-112.webp" alt="Figure 10.1 contour plots comparing taper, twist, and section span distribution against lift-to-drag ratio, drag coefficient, and propeller efficiency responses." width="959" height="746" loading="lazy" decoding="async">
-                    </a>
-                    <figcaption><span>FIGURE 10.1 · GEOMETRY AND PERFORMANCE CONTOURS</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=112" target="_blank" rel="noreferrer">OPEN PDF PAGE 112 <span aria-hidden="true">↗</span></a></figcaption>
-                  </figure>
-                </div>
-              </article>
-            </div>
-          </section>
-          <div class="spec-row"><span>MODEL <b>3D ASSEMBLY</b></span><span>FILES <b>GLB + PDF</b></span><span>FOCUS <b>FORM / STRUCTURE / DETAIL</b></span></div>
-        </article>
-
         <div id="drawings" class="drawings-heading"><div><p class="eyebrow">TECHNICAL DRAWINGS</p><h3>One model. Multiple views.</h3></div><span class="drawings-count">17 SHEETS <span class="count-rule"></span> PDF</span></div>
         <nav class="drawing-jump-nav" aria-label="Jump to drawing category">
           <a href="#aircraft-drawings"><span class="drawing-jump-index">01</span><span>Aircraft</span><span class="drawing-jump-count">4 sheets</span><span class="drawing-jump-arrow" aria-hidden="true">↓</span></a>
@@ -241,6 +231,13 @@
         <section id="landing-gear-drawings" class="drawing-group gear-drawing-group" aria-labelledby="gear-drawing-title">
           <div class="drawing-group-heading"><div><p class="eyebrow">02 / MECHANISM STUDY</p><h4 id="gear-drawing-title">Landing gear, in detail.</h4></div><p>Exploded and assembled views</p></div>
             <button class="drawing-card drawing-card-featured gear-feature-card" data-pdf="./assets/CAD2.pdf" data-title="Landing gear CAD study" type="button"><span class="drawing-preview"><img src="./assets/previews/CAD2.png" alt="Exploded and assembled technical drawing of a landing gear mechanism" width="1280" height="905" loading="lazy" decoding="async"><span class="preview-open">OPEN SHEET ↗</span></span><span class="drawing-label"><span>05 / 17</span><b>Landing gear CAD study</b><span class="file-type">PDF</span></span></button>
+          <details class="project-details gear-case-study">
+            <summary class="project-details-summary">Landing gear model and drawing <span class="project-details-prompt">View details</span></summary>
+            <div class="project-details-panel" inert><div class="project-details-panel-inner"><div class="project-details-body">
+              <p>The interactive shaded/mesh model and drawing sheet show the mechanism in assembled and exploded views, making its part arrangement and overall form easier to inspect.</p>
+              <a class="project-action-link" href="./assets/CAD2.pdf" target="_blank" rel="noreferrer">OPEN LANDING GEAR DRAWING <span aria-hidden="true">↗</span></a>
+            </div></div></div>
+          </details>
         </section>
         <section id="part-study-drawings" class="drawing-group exercise-drawing-group" aria-labelledby="exercise-drawings-title">
           <div class="drawing-group-heading"><div><p class="eyebrow">03 / PART STUDIES</p><h4 id="exercise-drawings-title">Practice in precision.</h4></div><p>Dimensioned component drawings</p></div>
@@ -261,45 +258,302 @@
         </section>
       </section>
 
-      <section id="teaching" class="teaching-section">
-        <div class="section-wrap teaching-inner">
-          <div class="teaching-copy"><p class="eyebrow">02 — SKILLS &amp; TOOLS</p><h2>Good design is<br />clear at every <span>step.</span></h2><p>My workflow moves from aircraft geometry to aerodynamic analysis and clear technical communication. These tools support each stage, from 3D modeling and simulation to documentation and data analysis.</p></div>
-          <div class="software-groups" role="group" aria-label="Design, engineering, and productivity software">
-            <section class="software-group" aria-labelledby="software-cad-title">
-              <h3 id="software-cad-title" class="software-group-title">CAD &amp; MODELING</h3>
-              <div class="software-group-cards">
-                <a class="software-card" href="https://www.blender.org/" target="_blank" rel="noopener noreferrer" aria-label="Blender website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/blender.png" alt="" width="1024" height="1024" loading="lazy" decoding="async"></span><span class="software-name">Blender</span></a>
-                <a class="software-card" href="https://www.freecad.org/" target="_blank" rel="noopener noreferrer" aria-label="FreeCAD website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/freecad.svg" alt="" width="1800" height="480" loading="lazy" decoding="async"></span><span class="software-name">FreeCAD</span></a>
-                <a class="software-card" href="https://www.solidworks.com/" target="_blank" rel="noopener noreferrer" aria-label="SOLIDWORKS website, opens in a new tab"><span class="software-logo-frame software-wordmark">SOLIDWORKS</span><span class="software-name">SOLIDWORKS</span></a>
-                <a class="software-card" href="https://openvsp.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenVSP website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/openvsp.png" alt="" width="850" height="253" loading="lazy" decoding="async"></span><span class="software-name">OpenVSP</span></a>
-              </div>
-            </section>
-            <section class="software-group" aria-labelledby="software-analysis-title">
-              <h3 id="software-analysis-title" class="software-group-title">ANALYSIS &amp; SIMULATION</h3>
-              <div class="software-group-cards">
-                <a class="software-card" href="https://www.python.org/" target="_blank" rel="noopener noreferrer" aria-label="Python website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/python.svg" alt="" width="553" height="164" loading="lazy" decoding="async"></span><span class="software-name">Python</span></a>
-                <a class="software-card" href="https://openfoam.org/" target="_blank" rel="noopener noreferrer" aria-label="OpenFOAM website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/openfoam.svg" alt="" width="496" height="177" loading="lazy" decoding="async"></span><span class="software-name">OpenFOAM</span></a>
-                <a class="software-card" href="https://www.paraview.org/" target="_blank" rel="noopener noreferrer" aria-label="ParaView website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/paraview-wordmark.svg" alt="" width="462" height="106" loading="lazy" decoding="async"></span><span class="software-name">ParaView</span></a>
-                <a class="software-card" href="https://www.xflr5.tech/xflr5.html" target="_blank" rel="noopener noreferrer" aria-label="XFLR5 website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/xflr5-wordmark.svg" alt="" width="360" height="150" loading="lazy" decoding="async"></span><span class="software-name">XFLR5</span></a>
-                <a class="software-card" href="https://www.salome-platform.org/" target="_blank" rel="noopener noreferrer" aria-label="SALOME website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/salome-wordmark.svg" alt="" width="340" height="64" loading="lazy" decoding="async"></span><span class="software-name">SALOME</span></a>
-              </div>
-            </section>
-            <section class="software-group" aria-labelledby="software-productivity-title">
-              <h3 id="software-productivity-title" class="software-group-title">DOCUMENTATION &amp; DATA</h3>
-              <div class="software-group-cards">
-                <a class="software-card" href="https://www.microsoft.com/microsoft-365/word" target="_blank" rel="noopener noreferrer" aria-label="Microsoft Word website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/microsoft-word.svg" alt="" width="35" height="36" loading="lazy" decoding="async"></span><span class="software-name">Microsoft Word</span></a>
-                <a class="software-card" href="https://www.microsoft.com/microsoft-365/excel" target="_blank" rel="noopener noreferrer" aria-label="Microsoft Excel website, opens in a new tab"><span class="software-logo-frame"><img src="./assets/software-logos/microsoft-excel.svg" alt="" width="35" height="36" loading="lazy" decoding="async"></span><span class="software-name">Microsoft Excel</span></a>
-              </div>
-            </section>
+      <section id="teaching" class="teaching-section python-projects-section" aria-labelledby="python-projects-title">
+        <canvas class="particle-drift-canvas" aria-hidden="true"></canvas>
+        <div class="section-wrap python-projects-inner">
+          <div class="section-heading python-projects-heading">
+            <div><p class="eyebrow">PYTHON / PROJECTS</p><h2 id="python-projects-title">From calculations to <span>tools.</span></h2></div>
+            <p class="section-note">Python work spanning aircraft design, atmospheric calculations, ID generation, and gesture-driven model viewing.</p>
           </div>
+          <div class="python-engineering-projects" aria-label="Python engineering projects">
+            <article class="project-story project-story-flightforge" aria-labelledby="flightforge-title">
+              <div class="project-story-media project-image-link flightforge-slideshow" role="group" aria-label="FlightForge screenshot slideshow">
+                <img id="flightforge-slide-image" src="./assets/other_projects/FlightForge/aerogenesis.png" alt="FlightForge Aerogenesis visual featuring aircraft flow studies, a green concept form, and an engineering rendering" width="2000" height="1414" loading="lazy" decoding="async">
+                <span class="project-media-stamp">FLIGHTFORGE <b>PYTHON</b></span>
+                <div id="flightforge-slideshow-controls" class="flightforge-slideshow-controls" aria-label="Slideshow controls" hidden>
+                  <button id="flightforge-slide-prev" type="button" aria-label="Previous screenshot" title="Previous screenshot">&larr;</button>
+                  <button id="flightforge-slide-toggle" type="button" aria-label="Pause slideshow" title="Pause slideshow">PAUSE</button>
+                  <span id="flightforge-slide-count" aria-live="off">1 / 4</span>
+                  <button id="flightforge-slide-next" type="button" aria-label="Next screenshot" title="Next screenshot">&rarr;</button>
+                </div>
+                <a class="project-image-cta" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer">OPEN PROJECT SHEET &rarr;</a>
+              </div>
+              <div class="project-story-copy">
+                <p class="project-kicker"><span>PYTHON / AIRCRAFT DESIGN PIPELINE</span></p>
+                <h3 id="flightforge-title">FlightForge</h3>
+                <dl class="project-case-study">
+                  <div><dt>Goal</dt><dd>Bring the main steps of my aircraft design workflow together in one software tool.</dd></div>
+                  <div><dt>Process</dt><dd>I built a PyQt interface and connected it to Python scripts for aircraft sizing and analysis.</dd></div>
+                  <div><dt>Takeaway</dt><dd>FlightForge links aircraft sizing, modeling, analysis, and export in one workflow.</dd></div>
+                </dl>
+                <details class="project-details">
+                  <summary class="project-details-summary">Workflow and capabilities <span class="project-details-prompt">View details</span></summary>
+                  <div class="project-details-panel" inert><div class="project-details-panel-inner"><div class="project-details-body">
+                    <p>FlightForge brings several aircraft-design tasks into one interface:</p>
+                    <ul>
+                      <li>Weight sizing and power-loading and wing-loading plots.</li>
+                      <li>Weighted airfoil selection and parametric wing and fuselage modeling.</li>
+                      <li>OpenFOAM CFD integration, V-n diagrams, and XML export for FlightGear.</li>
+                    </ul>
+                    <p>I used Codex to help connect interface elements to the analysis scripts.</p>
+                  </div></div></div>
+                </details>
+                <div class="project-actions"><a class="project-action-link" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer">VIEW AEROGENESIS PDF <span aria-hidden="true">&rarr;</span></a><a class="project-action-link" href="https://github.com/ReinHardt0731/FlowFoam-FlightForge" target="_blank" rel="noopener noreferrer">VIEW ON GITHUB <span aria-hidden="true">&rarr;</span></a></div>
+              </div>
+            </article>
+
+            <article class="project-story" aria-labelledby="uav-title">
+              <div class="project-story-media project-viewer-shell">
+                <div class="project-viewer-topline"><span><i class="live-dot"></i> INTERACTIVE AIRFRAME</span><span>UAV / 3D</span></div>
+                <div id="uav-viewer" class="project-model-viewer uav-model-viewer" aria-label="Interactive UAV model">
+                  <canvas id="uav-canvas" aria-label="Interactive UAV model. Drag to orbit, scroll to zoom, and right-drag to pan."></canvas>
+                  <div id="uav-loading" class="project-model-message" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span id="uav-loading-text">Preparing the UAV model&hellip;</span><span id="uav-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="UAV model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></div>
+                  <div id="uav-error" class="project-model-message project-model-error" role="alert" hidden>UAV model preview could not be loaded. <a href="./assets/other_projects/UAV/Drone.glb" download>Download the GLB model</a><span aria-hidden="true"> &middot; </span><a href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">Open the project PDF</a></div>
+                  <button id="uav-reset" class="project-viewer-reset" type="button" aria-label="Reset UAV model view" title="Reset view" disabled hidden>RESET VIEW</button>
+                </div>
+                <div class="project-viewer-footer"><span>DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> RIGHT-DRAG TO PAN</span><a href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">VIEW PROJECT PDF &rarr;</a></div>
+              </div>
+              <div class="project-story-copy">
+                <p class="project-kicker"><span>PYTHON / UAV AIRFRAME</span></p>
+                <h3 id="uav-title">Unmanned aerial vehicle</h3>
+                <dl class="project-case-study">
+                  <div><dt>Goal</dt><dd>Estimate the weight of a UAV with a complex mission profile, including its battery.</dd></div>
+                  <div><dt>Process</dt><dd>I used Python iteration for the mission-weight estimate, then used OpenVSP to study the airframe and estimate parasitic drag.</dd></div>
+                  <div><dt>Takeaway</dt><dd>Iteration made the mission-weight estimate manageable and linked the aircraft model to its parasitic-drag estimate.</dd></div>
+                </dl>
+                <details class="project-details">
+                  <summary class="project-details-summary">Analysis method and deliverables <span class="project-details-prompt">View details</span></summary>
+                  <div class="project-details-panel" inert><div class="project-details-panel-inner"><div class="project-details-body">
+                    <p>The weight estimate includes the battery and uses fixed-point iteration to resolve the coupled mission-weight calculation. The resulting UAV model was used in OpenVSP to estimate parasitic drag.</p>
+                    <p>The project PDF contains the supporting design work and analysis.</p>
+                    <a class="project-action-link" href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">OPEN UAV PROJECT PDF <span aria-hidden="true">↗</span></a>
+                  </div></div></div>
+                </details>
+                <div class="project-actions"><a class="project-action-link" href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">OPEN UAV PROJECT PDF <span aria-hidden="true">&rarr;</span></a></div>
+              </div>
+            </article>
+          </div>
+          <div class="python-app-heading"><div><p class="eyebrow">PYTHON APPLICATIONS</p><h3>More projects in Python</h3></div><p>Small applications built for practical tasks, engineering calculations, and interactive 3D work.</p></div>
+          <div class="python-app-grid" aria-label="Python applications">
+            <article class="python-app-card">
+              <span class="python-app-index">01 / AUTOMATION</span>
+              <h4>QR ID Generator</h4>
+              <p class="python-app-summary">Generates unique student IDs and QR codes from a CSV roster, then places each person’s details on front and back ID card templates.</p>
+              <div class="python-app-tags"><span>PYTHON</span><span>PANDAS</span><span>QRCODE</span><span>PILLOW</span></div>
+            </article>
+            <article class="python-app-card">
+              <span class="python-app-index">02 / ATMOSPHERE MODEL</span>
+              <h4>Altitude Thermodynamic Property Calculator</h4>
+              <p class="python-app-summary">A desktop calculator that applies a layered atmosphere model to return pressure, temperature, and density for an entered altitude.</p>
+              <div class="python-app-tags"><span>PYTHON</span><span>PYQT5</span><span>STANDARD ATMOSPHERE</span></div>
+            </article>
+            <article class="python-app-card">
+              <span class="python-app-index">03 / GESTURE CONTROL</span>
+              <h4>GestureCam</h4>
+              <p class="python-app-summary">Use hand gestures to pan, zoom, and rotate STL models in a browser-based 3D viewer, with a live webcam preview.</p>
+              <div class="python-app-tags"><span>PYTHON</span><span>MEDIAPIPE</span><span>OPENCV</span><span>NUMPY</span><span>PYSIDE6</span><span>WEBGL</span></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="cfd-simulation" class="teaching-section waves-background-section project-section cfd-section" aria-labelledby="cfd-title">
+        <canvas class="flow-field-canvas" aria-hidden="true"></canvas>
+        <div class="section-wrap cfd-content">
+        <div class="section-heading project-heading">
+          <div><p class="eyebrow">CFD / SIMULATION</p><h2 id="cfd-title">Flow, <span>made visible.</span></h2></div>
+          <p class="section-note">Simulation studies exploring airflow around aircraft and propellers, with results shown at the scale and fidelity of each case.</p>
+        </div>
+        <article class="cfd-feature-case" aria-labelledby="aircraft-cfd-title">
+          <div class="cfd-case-heading">
+            <div><p class="project-kicker"><span>AIRCRAFT / CFD</span><span>FIDELITY COMPARISON</span></p><h3 id="aircraft-cfd-title">One aircraft. Two levels of fidelity.</h3></div>
+            <p>A paired view of the same aircraft case, showing how the flow is represented at low and high fidelity.</p>
+          </div>
+          <div class="cfd-comparison-grid" role="group" aria-label="Low- and high-fidelity aircraft simulation comparison">
+            <figure class="cfd-simulation-figure">
+              <img src="./assets/cfd/low-fidelity-aircraft.jpg" alt="Low-fidelity aircraft simulation with a surface mesh and flow lines around the aircraft." loading="lazy" decoding="async">
+              <figcaption><span>LOW FIDELITY</span><span>Aircraft flow simulation</span></figcaption>
+            </figure>
+            <figure class="cfd-simulation-figure">
+              <img src="./assets/cfd/high-fidelity-aircraft.png" alt="High-fidelity aircraft flow visualization with surface coloring and streamlines." loading="lazy" decoding="async">
+              <figcaption><span>HIGH FIDELITY</span><span>Aircraft flow simulation</span></figcaption>
+            </figure>
+          </div>
+        </article>
+
+        <div class="cfd-case-grid">
+          <article class="project-story cfd-openfoam-card" aria-labelledby="cfd-propeller-title">
+            <div class="project-story-media cfd-openfoam-media">
+              <img src="./assets/cfd/openfoam-propeller.png" alt="OpenFOAM flow visualization around a toroidal propeller, with streamlines and velocity-field legends." loading="lazy" decoding="async">
+              <span class="project-media-stamp">OPENFOAM <b>01</b></span>
+            </div>
+            <div class="project-story-copy">
+              <p class="project-kicker"><span>OPENFOAM / CFD</span><span>TOROIDAL PROPELLER</span></p>
+              <h3 id="cfd-propeller-title">Flow around a toroidal propeller</h3>
+              <p class="cfd-case-summary">A flow visualization of the toroidal propeller study, showing the velocity field and surrounding streamlines.</p>
+              <div class="project-tags" aria-label="Simulation software"><span>OPENFOAM</span><span>FLOW VISUALIZATION</span></div>
+              <div class="project-actions">
+                <a class="project-action-link" href="./assets/other_projects/Propeller%20Study/CFD%20Anlysis%20of%20Toroidal%20Propeller.pdf" target="_blank" rel="noreferrer">READ THE CFD STUDY <span aria-hidden="true">&rarr;</span></a>
+                <a class="project-action-link" href="#propeller-title">VIEW FULL PROJECT <span aria-hidden="true">&darr;</span></a>
+              </div>
+            </div>
+          </article>
+        </div>
         </div>
       </section>
 
       <section id="other-projects" class="project-section other-projects-section section-wrap" aria-labelledby="other-projects-title">
         <div class="section-heading project-heading">
-          <div><p class="eyebrow">03 &mdash; SELECTED PROJECTS</p><h2 id="other-projects-title">Ideas in <span>motion.</span></h2></div>
-          <p class="section-note">Explore projects in propulsion, aircraft design, UAV development, and interactive engineering tools.</p>
+          <div><p class="eyebrow">03 &mdash; RESEARCH STUDIES</p><h2 id="other-projects-title">Ideas in <span>motion.</span></h2></div>
+          <p class="section-note">Explore aircraft design, propulsion, and CFD studies, alongside an interactive engineering platform.</p>
         </div>
+        <article class="feature-project">
+          <div class="project-number">STUDY 01 <span>·</span> AIRCRAFT DESIGN / GANNET-T731</div>
+          <div class="feature-copy">
+            <div><h3>GANNET-T731 aircraft design</h3><p>Performance-led trainer-aircraft design, from mission constraints and sizing through aerodynamic optimization and CAD.</p></div>
+            <a class="round-link" href="#drawings" aria-label="View Gannet drawing sheets">↓</a>
+          </div>
+          <p class="aircraft-report-link"><a class="project-action-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf" target="_blank" rel="noreferrer">OPEN AIRCRAFT DESIGN PDF <span aria-hidden="true">&rarr;</span></a></p>
+          <div id="project-comparison" class="comparison-shell">
+            <div class="comparison-topline">
+              <span><i class="live-dot"></i> MATCHED MODEL COMPARISON</span>
+              <span id="comparison-status" role="status" aria-live="polite">WAITING TO LOAD</span>
+            </div>
+            <div id="comparison-viewer" class="comparison-viewer" aria-label="Interactive Gannet aircraft mesh and simulation comparison">
+              <canvas id="comparison-canvas" aria-label="Mesh and simulation views of the Gannet aircraft"></canvas>
+              <div id="comparison-loading" class="comparison-message" role="status" aria-live="polite"><span class="comparison-loading-stack"><span class="comparison-loading-copy"><span class="loader-ring" aria-hidden="true"></span><span id="comparison-loading-text">Preparing the mesh and simulation views…</span></span><span class="comparison-progress-pair"><span><span>MESH</span><span id="comparison-mesh-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="Mesh model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></span><span><span>SIMULATION</span><span id="comparison-simulation-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="Simulation model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></span></span></span></div>
+              <div id="comparison-error" class="comparison-message comparison-error" role="alert" hidden>One or more model files could not be loaded. Check the GLB files and try again.</div>
+              
+              <button id="divider-mesh-simulation" class="divider-handle" type="button" role="slider" aria-label="Move divider between mesh and simulation views" aria-orientation="horizontal" aria-valuemin="24" aria-valuemax="76" aria-valuenow="50" title="Drag or use arrow keys to move divider"><span class="divider-rule" aria-hidden="true"></span><span class="divider-grip" aria-hidden="true"><span></span></span></button>
+              <div class="comparison-corner" aria-hidden="true">GANNET XT0731<br />CAMERA / SHARED</div>
+            </div>
+            <div class="comparison-legend" aria-label="Comparison render modes">
+              <div><span class="legend-index">01</span><span><b>MESH</b><small>Mesh generation</small></span></div>
+              <div><span class="legend-index">02</span><span><b>SIMULATION</b><small>Simulation results</small></span></div>
+            </div>
+            <div class="comparison-toolbar">
+              <span class="viewer-hint"><span class="mouse-glyph">↗</span> DRAG TO ORBIT <span class="hint-separator">·</span> SCROLL TO ZOOM <span class="hint-separator">·</span> RIGHT-DRAG TO PAN</span>
+              <div class="viewer-controls" aria-label="Comparison controls">
+                <button id="comparison-home" class="icon-button" type="button" aria-label="Reset comparison camera" title="Reset view">⌂</button>
+                <button id="comparison-play" class="icon-button" type="button" aria-label="Play synchronized propeller animation" title="Play animation" disabled>▶</button>
+              </div>
+            </div>
+          </div>
+          <details class="aircraft-design-case-study project-details-aircraft">
+            <summary class="aircraft-design-case-study-heading project-details-summary">
+              <span class="eyebrow">AIRCRAFT DESIGN / ANALYSIS</span>
+              <span class="aircraft-results-strip aircraft-results-strip-heading" role="group" aria-label="Aircraft sizing results">
+                <span class="aircraft-results-item"><strong>1,517.981 <small>lb</small></strong><span>Aircraft gross weight</span></span>
+                <span class="aircraft-results-item"><strong>14.89 <small>lbf/ft<sup>2</sup></small></strong><span>Maximum allowable wing loading</span></span>
+                <span class="aircraft-results-item"><strong>8.28 <small>lbf/hp</small></strong><span>Maximum power loading under its sizing constraint</span></span>
+                <span class="aircraft-results-label">REPORTED SIZING LIMITS</span>
+              </span>
+              <span class="project-details-prompt">Study outline</span>
+            </summary><div class="project-details-panel" inert><div class="project-details-panel-inner">
+            <p class="aircraft-design-case-study-intro">GANNET-T731 is a trainer-aircraft concept developed from client-defined performance requirements. The study connects mission drivers to constraint-based sizing, then compares propeller performance, airfoil choices, and wing geometry. The mission profile frames the sizing limits, and the figures below show the supporting calculations and plots.</p>
+            <section class="aircraft-mission-profile" aria-labelledby="aircraft-mission-title">
+              <div class="aircraft-mission-heading"><p class="eyebrow">MISSION PROFILE</p><h5 id="aircraft-mission-title">Performance requirements across the flight</h5></div>
+              <figure class="aircraft-mission-diagram">
+                <svg class="aircraft-profile-svg" viewBox="0 0 1000 340" role="img" aria-labelledby="gannet-profile-svg-title gannet-profile-svg-description">
+                  <title id="gannet-profile-svg-title">GANNET-T731 mission profile</title>
+                  <desc id="gannet-profile-svg-description">Schematic aircraft mission profile showing a 1,312 foot takeoff distance, a 1,640,420 foot range, a 12,500 foot service ceiling, and a one-hour cruise/loiter marker. The drawing is not to scale.</desc>
+                  <path class="profile-ground" d="M42 220 H952" />
+                  <path class="profile-path" d="M48 220 H180 L244 58 L704 24 L760 220 H944" />
+                  <circle class="profile-loiter" cx="704" cy="24" r="13" />
+                  <path class="profile-leader" d="M714 15 L746 15 H790" />
+                  <rect class="profile-time-box" x="790" y="8" width="88" height="30" rx="15" />
+                  <text class="profile-time-label" x="834" y="28" text-anchor="middle">1 hr</text>
+                  <text class="profile-stage-label" x="286" y="51">CLIMB</text>
+                  <text class="profile-stage-label" x="486" y="17">CRUISE</text>
+                  <text class="profile-stage-label" x="790" y="203">DESCENT</text>
+
+                  <path class="profile-dimension" d="M48 252 H180" />
+                  <path class="profile-dimension-tick" d="M48 242 V262 M180 242 V262" />
+                  <text class="profile-dimension-label" x="114" y="277" text-anchor="middle">1,312 ft</text>
+                  <text class="profile-caption" x="114" y="298" text-anchor="middle">TAKEOFF DISTANCE</text>
+
+                  <path class="profile-dimension" d="M180 310 H760" />
+                  <path class="profile-dimension-tick" d="M180 300 V320 M760 300 V320" />
+                  <text class="profile-dimension-label" x="470" y="302" text-anchor="middle">1,640,420 ft</text>
+                  <text class="profile-caption" x="470" y="333" text-anchor="middle">RANGE</text>
+
+                  <path class="profile-dimension" d="M870 24 V220" />
+                  <path class="profile-dimension-tick" d="M860 24 H880 M860 220 H880" />
+                  <text class="profile-dimension-label profile-ceiling-label" x="912" y="122" text-anchor="middle" transform="rotate(-90 912 122)">12,500 ft</text>
+                  <text class="profile-caption profile-ceiling-caption" x="944" y="122" text-anchor="middle" transform="rotate(-90 944 122)">SERVICE CEILING</text>
+                </svg>
+                <figcaption class="aircraft-mission-note">MISSION PROFILE <span>SCHEMATIC / NOT TO SCALE</span></figcaption>
+              </figure>
+            </section>
+            <div class="aircraft-case-study-list">
+              <article class="aircraft-case-study-card">
+                <div class="aircraft-case-study-copy">
+                  <p class="eyebrow">01 / REQUIREMENT-BASED SIZING</p>
+                  <h5>Identify feasible wing and power loading.</h5>
+                  <p>Stall speed, maximum speed, take-off, rate of climb, and service-ceiling requirements define constraints on power loading versus wing loading. Their intersections set sizing limits. The report gives a maximum allowable wing loading of 14.89 lbf/ft² and a maximum power loading of 8.28 lbf/hp under their respective constraints.</p>
+                </div>
+                <div class="aircraft-case-study-visuals">
+                  <figure class="aircraft-study-figure aircraft-study-figure-themed aircraft-study-figure-dark-plot">
+                    <a class="aircraft-study-image-link aircraft-study-image-link-dark-plot" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=42" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to the final sizing constraint plot on PDF page 42">
+                      <img src="./assets/other_projects/gannet-design-figures/page-42.webp" alt="Final aircraft-sizing plot showing stall-speed, maximum-speed, take-off, rate-of-climb, and service-ceiling constraints against wing loading and power loading." width="998" height="778" loading="lazy" decoding="async">
+                    </a>
+                    <figcaption><span>FINAL SIZING · WING LOADING VS. POWER LOADING</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=42" target="_blank" rel="noreferrer">OPEN PDF PAGE 42 <span aria-hidden="true">↗</span></a></figcaption>
+                  </figure>
+                </div>
+              </article>
+              <article class="aircraft-case-study-card">
+                <div class="aircraft-case-study-copy">
+                  <p class="eyebrow">02 / AIRFOIL SELECTION</p>
+                  <h5>Balance aerodynamic performance and structural needs.</h5>
+                  <p>I set custom weights for maximum lift, minimum drag, lift-to-drag ratio, thickness, pitching moment, and angle-of-attack margin for each wing section. This let me compare candidate airfoils by both aerodynamic performance and the greater thickness required near the wing root.</p>
+                </div>
+                <div class="aircraft-case-study-visuals">
+                  <figure class="aircraft-study-figure aircraft-study-figure-themed">
+                    <a class="aircraft-study-image-link" href="./assets/other_projects/gannet-design-figures/airfoil-performance-workflow.svg" target="_blank" rel="noreferrer" aria-label="Open the airfoil performance workflow diagram">
+                      <img src="./assets/other_projects/gannet-design-figures/airfoil-performance-workflow.svg" alt="Workflow showing simulation setup and validation, airfoil polar generation, data processing and normalization, weight configuration, and optimum airfoil selection." width="1000" height="700" loading="lazy" decoding="async">
+                    </a>
+                    <figcaption><span>FIGURE 3.2 · AIRFOIL PERFORMANCE WORKFLOW</span><a href="./assets/other_projects/gannet-design-figures/airfoil-performance-workflow.svg" target="_blank" rel="noreferrer">OPEN DIAGRAM <span aria-hidden="true">↗</span></a></figcaption>
+                  </figure>
+                </div>
+              </article>
+
+              <article class="aircraft-case-study-card">
+                <div class="aircraft-case-study-copy">
+                  <p class="eyebrow">03 / PROPELLER &amp; EXCESS POWER</p>
+                  <h5>Compare available and required power across airspeed.</h5>
+                  <p>Excess power is the difference between power available and power required. This sea-level graph compares those curves across airspeed; positive excess power indicates power available for climb and acceleration. Dashed limits mark the operating speeds and maximum power.</p>
+                </div>
+                <div class="aircraft-case-study-visuals">
+                  <figure class="aircraft-study-figure aircraft-study-figure-themed">
+                    <a class="aircraft-study-image-link" href="./assets/other_projects/gannet-design-figures/excess-power-sea-level.svg" target="_blank" rel="noreferrer" aria-label="Open the sea-level excess-power graph">
+                      <img src="./assets/other_projects/gannet-design-figures/excess-power-sea-level.svg" alt="Figure 7.2, sea-level graph of power required, power available, excess power, aircraft operating-speed limits, and maximum power." width="1000" height="820" loading="lazy" decoding="async">
+                    </a>
+                    <figcaption><span>FIGURE 7.2 · EXCESS POWER AT SEA LEVEL</span><a href="./assets/other_projects/gannet-design-figures/excess-power-sea-level.svg" target="_blank" rel="noreferrer">OPEN DIAGRAM <span aria-hidden="true">↗</span></a></figcaption>
+                  </figure>
+                </div>
+              </article>
+
+              
+
+              <article class="aircraft-case-study-card">
+                <div class="aircraft-case-study-copy">
+                  <p class="eyebrow">04 / WING OPTIMIZATION</p>
+                  <h5>Measure how wing geometry affects aerodynamic response.</h5>
+                  <p>Response Surface Methodology compared taper ratio, wing twist, and section span distribution across aerodynamic responses. The report’s R² analysis identifies twist and section span distribution as the strongest influences; taper ratio has a smaller and less consistent effect in this study.</p>
+                </div>
+                <div class="aircraft-case-study-visuals">
+                  <figure class="aircraft-study-figure">
+                    <a class="aircraft-study-image-link" href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=112" target="_blank" rel="noreferrer" aria-label="Open the aircraft design paper to Figure 10.1 on PDF page 112">
+                      <img src="./assets/other_projects/gannet-design-figures/page-112.webp" alt="Figure 10.1 contour plots comparing taper, twist, and section span distribution against lift-to-drag ratio, drag coefficient, and propeller efficiency responses." width="959" height="746" loading="lazy" decoding="async">
+                    </a>
+                    <figcaption><span>FIGURE 10.1 · GEOMETRY AND PERFORMANCE CONTOURS</span><a href="./assets/other_projects/AircraftDesign_Gan_GANNET-T731.pdf#page=112" target="_blank" rel="noreferrer">OPEN PDF PAGE 112 <span aria-hidden="true">↗</span></a></figcaption>
+                  </figure>
+                </div>
+              </article>
+            </div>
+</div></div>          </details>
+          <div class="spec-row"><span>MODEL <b>3D ASSEMBLY</b></span><span>FILES <b>GLB + PDF</b></span><span>FOCUS <b>FORM / STRUCTURE / DETAIL</b></span></div>
+        </article>
         <div class="project-stories">
           <article class="project-story project-story-featured" aria-labelledby="propeller-title">
             <div class="project-story-media project-viewer-shell">
@@ -318,68 +572,28 @@
               <div class="project-viewer-footer"><span id="propeller-viewer-instructions">DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> DRAG DIVIDER TO COMPARE</span><a href="./assets/other_projects/Propeller%20Study/CFD%20Anlysis%20of%20Toroidal%20Propeller.pdf" target="_blank" rel="noreferrer">READ THE CFD STUDY &rarr;</a></div>
             </div>
             <div class="project-story-copy">
-              <p class="project-kicker"><span>PROJECT 01</span><span>PROPULSION / CFD</span></p>
+              <p class="project-kicker"><span>PROJECT 02</span><span>PROPULSION / CFD</span></p>
               <h3 id="propeller-title">Toroidal propeller study</h3>
               <dl class="project-case-study">
                 <div><dt>Goal</dt><dd>Develop a repeatable approach to defining propeller cases and relating geometry to performance.</dd></div>
                 <div><dt>Process</dt><dd>I modeled and simulated the CV and TV configurations, comparing torque, thrust, and advance ratio.</dd></div>
                 <div><dt>Takeaway</dt><dd>The study focused on low operating conditions and helped me build a reusable workflow for analyzing propeller performance.</dd></div>
               </dl>
+              <details class="project-details">
+                <summary class="project-details-summary">Study approach and evidence <span class="project-details-prompt">View details</span></summary>
+                <div class="project-details-panel" inert><div class="project-details-panel-inner"><div class="project-details-body">
+                  <p>The comparison tracks torque and thrust against advance ratio for the CV and TV configurations. The study focuses on low operating conditions and documents a repeatable setup for comparing the modeled designs.</p>
+                  <a class="project-action-link" href="./assets/other_projects/Propeller%20Study/CFD%20Anlysis%20of%20Toroidal%20Propeller.pdf" target="_blank" rel="noreferrer">READ THE CFD STUDY <span aria-hidden="true">↗</span></a>
+                </div></div></div>
+              </details>
               <div class="project-tags"><span>CV / TV COMPARISON</span><span>TOROIDAL PROPELLER</span></div>
               <div class="project-actions"><a class="project-action-link" href="https://youtu.be/VcLXG7ntwDY" target="_blank" rel="noopener noreferrer">WATCH TOROIDAL PROPELLER VIDEO <span aria-hidden="true">&rarr;</span></a></div>
             </div>
           </article>
 
-          <article class="project-story" aria-labelledby="flightforge-title">
-            <div class="project-story-media project-image-link flightforge-slideshow" role="group" aria-label="FlightForge screenshot slideshow">
-              <img id="flightforge-slide-image" src="./assets/other_projects/FlightForge/aerogenesis.png" alt="FlightForge Aerogenesis visual featuring aircraft flow studies, a green concept form, and an engineering rendering" width="2000" height="1414" loading="lazy" decoding="async">
-              <span class="project-media-stamp">FLIGHTFORGE <b>02</b></span>
-              <div id="flightforge-slideshow-controls" class="flightforge-slideshow-controls" aria-label="Slideshow controls" hidden>
-                <button id="flightforge-slide-prev" type="button" aria-label="Previous screenshot" title="Previous screenshot">&larr;</button>
-                <button id="flightforge-slide-toggle" type="button" aria-label="Pause slideshow" title="Pause slideshow">PAUSE</button>
-                <span id="flightforge-slide-count" aria-live="off">1 / 4</span>
-                <button id="flightforge-slide-next" type="button" aria-label="Next screenshot" title="Next screenshot">&rarr;</button>
-              </div>
-              <a class="project-image-cta" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer">OPEN PROJECT SHEET &rarr;</a>
-            </div>
-            <div class="project-story-copy">
-              <p class="project-kicker"><span>PROJECT 02</span><span>PYTHON / AIRCRAFT DESIGN PIPELINE</span></p>
-              <h3 id="flightforge-title">FlightForge</h3>
-              <dl class="project-case-study">
-                <div><dt>Goal</dt><dd>Bring the main steps of my aircraft design workflow together in one software tool.</dd></div>
-                <div><dt>Process</dt><dd>I built the interface with PyQt and wrote Python scripts for weight sizing, power- and wing-loading plots, and weighted airfoil selection. The workflow also supports parametric wing and fuselage modeling, OpenFOAM CFD integration, V-n diagrams, and XML export for FlightGear. I used Codex to help connect the interface elements to the scripts.</dd></div>
-                <div><dt>Takeaway</dt><dd>FlightForge links aircraft sizing, modeling, analysis, and export in one workflow.</dd></div>
-              </dl>
-              <div class="project-actions"><a class="project-action-link" href="./assets/other_projects/FlightForge/aerogenesis.pdf" target="_blank" rel="noreferrer">VIEW AEROGENESIS PDF <span aria-hidden="true">&rarr;</span></a><a class="project-action-link" href="https://github.com/ReinHardt0731/FlowFoam-FlightForge" target="_blank" rel="noopener noreferrer">VIEW ON GITHUB <span aria-hidden="true">&rarr;</span></a></div>
-            </div>
-          </article>
-
-          <article class="project-story" aria-labelledby="uav-title">
-            <div class="project-story-media project-viewer-shell">
-              <div class="project-viewer-topline"><span><i class="live-dot"></i> INTERACTIVE AIRFRAME</span><span>UAV / 3D</span></div>
-              <div id="uav-viewer" class="project-model-viewer uav-model-viewer" aria-label="Interactive UAV model">
-                <canvas id="uav-canvas" aria-label="Interactive UAV model. Drag to orbit, scroll to zoom, and right-drag to pan."></canvas>
-                <div id="uav-loading" class="project-model-message" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span id="uav-loading-text">Preparing the UAV model&hellip;</span><span id="uav-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="UAV model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></div>
-                <div id="uav-error" class="project-model-message project-model-error" role="alert" hidden>UAV model preview could not be loaded. <a href="./assets/other_projects/UAV/Drone.glb" download>Download the GLB model</a><span aria-hidden="true"> &middot; </span><a href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">Open the project PDF</a></div>
-                <button id="uav-reset" class="project-viewer-reset" type="button" aria-label="Reset UAV model view" title="Reset view" disabled hidden>RESET VIEW</button>
-              </div>
-              <div class="project-viewer-footer"><span>DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> RIGHT-DRAG TO PAN</span><a href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">VIEW PROJECT PDF &rarr;</a></div>
-            </div>
-            <div class="project-story-copy">
-              <p class="project-kicker"><span>PROJECT 03</span><span>UAV / AIRFRAME</span></p>
-              <h3 id="uav-title">Unmanned aerial vehicle</h3>
-              <dl class="project-case-study">
-                <div><dt>Goal</dt><dd>Estimate the weight of a UAV with a complex mission profile, including its battery.</dd></div>
-                <div><dt>Process</dt><dd>I used fixed-point iteration in Python to solve the coupled weight estimate, then modeled the UAV in OpenVSP to estimate parasitic drag.</dd></div>
-                <div><dt>Takeaway</dt><dd>Iteration made the mission-weight estimate manageable and linked the aircraft model to its parasitic-drag estimate.</dd></div>
-              </dl>
-              <div class="project-actions"><a class="project-action-link" href="./assets/other_projects/UAV/UAV_GROUP1.pdf" target="_blank" rel="noreferrer">OPEN UAV PROJECT PDF <span aria-hidden="true">&rarr;</span></a></div>
-            </div>
-          </article>
-
           <article class="project-story project-story-fulcrum" aria-labelledby="fulcrum-title-card">
             <div class="project-story-copy">
-              <p class="project-kicker"><span>PROJECT 04</span><span>WEB / INTERACTIVE</span></p>
+              <p class="project-kicker"><span>PROJECT 03</span><span>WEB / INTERACTIVE</span></p>
               <h3 id="fulcrum-title-card">Fulcrum</h3>
               <p>An interactive engineering platform with a question bank and study modes that make technical concepts easier to explore in a browser.</p>
               <div class="project-actions"><button id="open-fulcrum" class="button button-primary" type="button">Preview site <span aria-hidden="true">&rarr;</span></button><a class="project-action-link" href="https://reinhardt0731.github.io/reinhardt.fulcrum/" target="_blank" rel="noreferrer">OPEN FULL SITE <span aria-hidden="true">&rarr;</span></a></div>
@@ -411,16 +625,8 @@
         <div class="section-wrap aircraft-finale-inner">
           <div class="aircraft-finale-heading">
             <p class="eyebrow">AIRCRAFT / RECOGNITION</p>
-            <h2 id="aircraft-finale-title">Design in <span>motion.</span></h2>
-            <p>Explore the animated aircraft, then browse awards recognizing work across three disciplines.</p>
-          </div>
-          <div id="aircraft-stage" class="aircraft-stage" aria-label="Interactive animated aircraft model">
-            <canvas id="aircraft-canvas" aria-label="Animated aircraft model. Drag to orbit, scroll to zoom, and right-drag to pan."></canvas>
-            <div class="aircraft-stage-topline" aria-hidden="true"><span><i class="live-dot"></i> ANIMATED AIRCRAFT</span><span>3D / GLB</span></div>
-            <div id="aircraft-loading" class="aircraft-stage-message" role="status" aria-live="polite"><span class="loader-ring" aria-hidden="true"></span><span id="aircraft-loading-text">Preparing the aircraft model&hellip;</span><span id="aircraft-progress" class="viewer-loading-progress is-indeterminate" role="progressbar" aria-label="Aircraft model loading" aria-valuemin="0" aria-valuemax="100"><span></span></span></div>
-            <div id="aircraft-error" class="aircraft-stage-message aircraft-stage-error" role="alert" hidden>Aircraft preview could not be loaded. <a href="./assets/other_projects/animated_aircraft.glb" download>Download the GLB model</a></div>
-            <button id="aircraft-play" class="aircraft-play" type="button" aria-label="Pause aircraft animation" title="Pause animation" disabled hidden>PAUSE ANIMATION <span aria-hidden="true">&#9646;&#9646;</span></button>
-            <span class="aircraft-stage-hint">DRAG TO ORBIT <i>&middot;</i> SCROLL TO ZOOM <i>&middot;</i> RIGHT-DRAG TO PAN</span>
+            <h2 id="aircraft-finale-title">Engineering work, <span>recognized.</span></h2>
+            <p>Awards recognizing work across aircraft design, feasibility studies, and UAV development.</p>
           </div>
           <div class="awards-strip" aria-labelledby="awards-title">
             <h3 id="awards-title">AWARDS / RECOGNITION</h3>
@@ -467,28 +673,6 @@
                   </figure>
                 </div>
               </div>
-            </section>
-            <section class="licensure-results" aria-labelledby="licensure-results-title">
-              <div class="licensure-results-heading">
-                <div class="licensure-title-group">
-                  <p class="eyebrow">PROFESSIONAL QUALIFICATION</p>
-                  <h4 id="licensure-results-title">Aeronautical Engineer Licensure Examination (AELE)</h4>
-                  <p class="licensure-year">2026</p>
-                </div>
-                <div class="licensure-highlight" aria-label="Passed with a general average of 87.60 percent">
-                  <span class="licensure-status">PASSED</span>
-                  <strong class="licensure-average">87.60%</strong>
-                  <span class="licensure-average-label">GENERAL AVERAGE</span>
-                </div>
-              </div>
-              <ul class="licensure-subjects">
-                <li><span>Aerodynamics</span><strong>93.00</strong></li>
-                <li><span>Mathematics</span><strong>93.00</strong></li>
-                <li><span>Engineering Economics and Management, Laws and Ethics</span><strong>87.00</strong></li>
-                <li><span>Aircraft Construction, Repair and Modification</span><strong>85.00</strong></li>
-                <li><span>Aircraft Structure and Design</span><strong>84.00</strong></li>
-                <li><span>Aircraft Power Plant</span><strong>84.00</strong></li>
-              </ul>
             </section>
           </div>
         </div>

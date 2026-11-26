@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 820" role="img" aria-labelledby="title description">
+  <title id="title">Excess Power at Sea Level</title>
+  <desc id="description">Sea-level aircraft performance graph from 0 to 300 miles per hour equivalent airspeed and 0 to 220 horsepower. It shows power required, power available, excess power, operating-speed limits, and a 210 horsepower maximum-power line. The curve shapes are recreated from the supplied Figure 7.2 reference.</desc>
+  <defs>
+    <style>
+      .bg{fill:#111a2a}
+      .grid{fill:none;stroke:#35465e;stroke-width:1;stroke-dasharray:5 7}
+      .axis{fill:none;stroke:#9aaabe;stroke-width:1.6}
+      .tick{fill:#b4c0cf;font:15px Arial,sans-serif}
+      .axis-title{fill:#e8edf3;font:17px Arial,sans-serif;font-weight:600;letter-spacing:.02em}
+      .title{fill:#edf2f6;font:600 24px Arial,sans-serif;letter-spacing:.01em}
+      .required{fill:none;stroke:#74b6ff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .available{fill:none;stroke:#d3ef66;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .excess{fill:none;stroke:#ff8179;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+      .limit{fill:none;stroke-width:1.7;stroke-dasharray:7 7;opacity:.9}
+      .legend-label{fill:#dce4ed;font:15px Arial,sans-serif}
+      .legend-title{fill:#93a3b7;font:bold 12px Consolas,monospace;letter-spacing:1px}
+      .legend-box{fill:#17263a;stroke:#3a4e68;stroke-width:1.2}
+      .marker{fill:#111a2a;stroke-width:2.2}
+    </style>
+  </defs>
+  <rect class="bg" width="1000" height="820" rx="8"/>
+  <text class="title" x="530" y="42" text-anchor="middle">EXCESS POWER AT SEA LEVEL</text>
+
+  <!-- Plot grid: velocity 0–300 MPH; power 0–220 HP -->
+  <path class="grid" d="M105 570H955 M105 458.6H955 M105 347.3H955 M105 235.9H955 M105 124.5H955"/>
+  <path class="grid" d="M246.7 80V570 M388.3 80V570 M530 80V570 M671.7 80V570 M813.3 80V570 M955 80V570"/>
+
+  <!-- Operating limits -->
+  <path class="limit" stroke="#8498ff" d="M252.3 80V570"/>
+  <path class="limit" stroke="#73a9ff" d="M280.7 80V570"/>
+  <path class="limit" stroke="#83d9c2" d="M589.5 80V570"/>
+  <path class="limit" stroke="#42d6e8" d="M645.5 80V570"/>
+  <path class="limit" stroke="#ff83ae" d="M651.5 80V570"/>
+  <path class="limit" stroke="#d28aff" d="M713.3 80V570"/>
+  <path class="limit" stroke="#f4ae58" d="M105 102.3H955"/>
+
+  <!-- Performance curves -->
+  <path class="required" d="M161.7 430 C196 480 218 510 246.7 512 C286 516 326 518 359.9 508 C426 491 480 462 530 400 C579 340 618 276 643 236 C669 191 695 123 728.3 80"/>
+  <path class="available" d="M161.7 463 C202 415 239 365 275 329 C316 288 354 251 388.3 225 C420 204 445 191 473 184 C504 176 531 170 558.3 169 C594 166 639 168 671.7 170 C716 173 751 176 785 178 C830 183 870 190 898 196 C920 200 940 204 955 207"/>
+  <path class="excess" d="M175.8 570 C190 533 198 511 204.2 501 C223 458 235 423 246.7 403 C269 363 286 342 303 336 C337 310 379 286 416.3 285 C441 284 460 288 473 294 C505 306 521 318 530 320 C555 337 573 359 586.7 372 C613 404 631 442 643 459 C666 508 687 551 700 570"/>
+
+  <!-- Axes -->
+  <path class="axis" d="M105 80V570H955"/>
+  <path class="axis" d="M105 570V80H955 M955 80V570"/>
+  <g class="tick" text-anchor="middle">
+    <path class="axis" d="M105 570V578"/><text x="105" y="600">0</text>
+    <path class="axis" d="M246.7 570V578"/><text x="246.7" y="600">50</text>
+    <path class="axis" d="M388.3 570V578"/><text x="388.3" y="600">100</text>
+    <path class="axis" d="M530 570V578"/><text x="530" y="600">150</text>
+    <path class="axis" d="M671.7 570V578"/><text x="671.7" y="600">200</text>
+    <path class="axis" d="M813.3 570V578"/><text x="813.3" y="600">250</text>
+    <path class="axis" d="M955 570V578"/><text x="955" y="600">300</text>
+  </g>
+  <g class="tick" text-anchor="end">
+    <path class="axis" d="M97 570H105"/><text x="87" y="575">0</text>
+    <path class="axis" d="M97 458.6H105"/><text x="87" y="464">50</text>
+    <path class="axis" d="M97 347.3H105"/><text x="87" y="352">100</text>
+    <path class="axis" d="M97 235.9H105"/><text x="87" y="241">150</text>
+    <path class="axis" d="M97 124.5H105"/><text x="87" y="130">200</text>
+  </g>
+  <text class="axis-title" x="530" y="630" text-anchor="middle">VELOCITY EAS (MPH)</text>
+  <text class="axis-title" x="30" y="325" text-anchor="middle" transform="rotate(-90 30 325)">POWER (HP)</text>
+
+  <!-- Curve legend -->
+  <text class="legend-title" x="105" y="670">POWER CURVES</text>
+  <path class="required" d="M105 700H150"/><text class="legend-label" x="162" y="705">Power Required</text>
+  <path class="available" d="M365 700H410"/><text class="legend-label" x="422" y="705">Power Available</text>
+  <path class="excess" d="M650 700H695"/><text class="legend-label" x="707" y="705">Excess Power</text>
+
+  <!-- Operating-limit legend -->
+  <text class="legend-title" x="105" y="740">OPERATING LIMITS</text>
+  <path class="limit" stroke="#42d6e8" d="M105 766H143"/><text class="legend-label" x="151" y="771">VMO · Max Operating</text>
+  <path class="limit" stroke="#83d9c2" d="M340 766H378"/><text class="legend-label" x="386" y="771">VC · Cruise / VNO</text>
+  <path class="limit" stroke="#73a9ff" d="M555 766H593"/><text class="legend-label" x="601" y="771">VD · Dive</text>
+  <path class="limit" stroke="#ff83ae" d="M715 766H753"/><text class="legend-label" x="761" y="771">VNE · Never Exceed</text>
+  <path class="limit" stroke="#8498ff" d="M105 792H143"/><text class="legend-label" x="151" y="797">VS · Stall</text>
+  <path class="limit" stroke="#d28aff" d="M340 792H378"/><text class="legend-label" x="386" y="797">VTO · Take-off</text>
+  <path class="limit" stroke="#f4ae58" d="M555 792H593"/><text class="legend-label" x="601" y="797">Maximum Power · 210 HP</text>
+</svg>

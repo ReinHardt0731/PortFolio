@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 920" role="img" aria-labelledby="title description">
+  <title id="title">Airfoil performance analysis workflow</title>
+  <desc id="description">A four-stage workflow: validate simulation setup; generate airfoil polars in Xfoil; filter, read, and normalize the data; configure weights and select an optimum airfoil.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#d3ef66"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0 10 5 0 10Z" fill="#8799b0"/>
+    </marker>
+    <style>
+      .canvas { fill:#111a2a; }
+      .panel { fill:#17263a; stroke:#334760; stroke-width:1.5; }
+      .panel-rule { stroke:#334760; stroke-width:1; }
+      .node { fill:#1d3048; stroke:#60748e; stroke-width:1.6; }
+      .node-accent { fill:#22364e; stroke:#d3ef66; stroke-width:1.7; }
+      .diamond { fill:#1d3048; stroke:#9aabc0; stroke-width:1.6; }
+      .data-node { fill:#1d3048; stroke:#60748e; stroke-width:1.6; }
+      .flow { fill:none; stroke:#d3ef66; stroke-width:2; marker-end:url(#arrow); stroke-linecap:round; stroke-linejoin:round; }
+      .feedback { fill:none; stroke:#8799b0; stroke-width:1.5; stroke-dasharray:5 5; marker-end:url(#arrow-muted); stroke-linecap:round; stroke-linejoin:round; }
+      .step { fill:#eef2f6; font:500 22px Arial,sans-serif; text-anchor:middle; dominant-baseline:middle; }
+      .step-small { fill:#dce4ed; font:19px Arial,sans-serif; text-anchor:middle; dominant-baseline:middle; }
+      .stage { fill:#d3ef66; font:bold 18px Consolas,monospace; letter-spacing:1.2px; }
+      .heading { fill:#e9eef4; font:500 23px Arial,sans-serif; }
+      .hint { fill:#91a1b5; font:15px Arial,sans-serif; }
+      .loop-label { fill:#a9b6c6; font:15px Arial,sans-serif; }
+      .caption { fill:#92a3b7; font:14px Consolas,monospace; letter-spacing:1px; }
+    </style>
+  </defs>
+
+  <rect class="canvas" width="1200" height="920" rx="8"/>
+
+  <!-- Stage 1: simulation setup -->
+  <text class="stage" x="42" y="37">01 / SIMULATION SETUP</text>
+  <rect class="node" x="75" y="67" width="225" height="68" rx="11"/>
+  <text class="step" x="187" y="101">Simulation Setup</text>
+  <path class="flow" d="M300 101 H435"/>
+  <path class="diamond" d="M500 55 565 101 500 147 435 101Z"/>
+  <text class="step-small" x="500" y="93">Setup</text>
+  <text class="step-small" x="500" y="111">Validation</text>
+  <path class="flow" d="M565 101 H730"/>
+  <path class="node-accent" d="M750 67 H900 L922 101 900 135 H750 L728 101Z"/>
+  <text class="step" x="825" y="101">Store Log</text>
+  <path class="feedback" d="M500 55 V49 H187 V67"/>
+  <text class="loop-label" x="310" y="45" text-anchor="middle">Invalid setup · revise inputs</text>
+  <path class="feedback" d="M500 147 V184 H25 V344 H78"/>
+  <text class="loop-label" x="40" y="202">Validated setup</text>
+
+  <!-- Stage 2: airfoil polar generation -->
+  <rect class="panel" x="40" y="220" width="520" height="280" rx="8"/>
+  <text class="stage" x="62" y="250">02 / XFOIL</text>
+  <text class="heading" x="62" y="278">Airfoil Polar Generation</text>
+  <line class="panel-rule" x1="62" y1="292" x2="538" y2="292"/>
+  <rect class="node" x="78" y="315" width="128" height="58" rx="9"/>
+  <text class="step-small" x="142" y="344">Read Input</text>
+  <rect class="node" x="242" y="315" width="128" height="58" rx="9"/>
+  <text class="step-small" x="306" y="344">Simulate</text>
+  <path class="data-node" d="M424 315 H484 Q510 315 510 344 T484 373 H424Z"/>
+  <text class="step-small" x="461" y="344">Store Polar</text>
+  <text class="step-small" x="461" y="360">Data</text>
+  <path class="flow" d="M206 344 H242"/>
+  <path class="flow" d="M370 344 H424"/>
+  <rect class="node" x="242" y="405" width="128" height="52" rx="9"/>
+  <text class="step-small" x="306" y="431">Change Input</text>
+  <path class="feedback" d="M306 373 V405"/>
+  <path class="feedback" d="M242 431 H214 V344 H206"/>
+  <text class="hint" x="78" y="478">Adjust the input and rerun when the polar needs refinement.</text>
+
+  <!-- Stage 3: data processing and normalization -->
+  <rect class="panel" x="590" y="220" width="570" height="280" rx="8"/>
+  <text class="stage" x="612" y="250">03 / DATA PROCESSING</text>
+  <text class="heading" x="612" y="278">Filter, Read, Normalize</text>
+  <line class="panel-rule" x1="612" y1="292" x2="1138" y2="292"/>
+  <path class="flow" d="M510 344 H630"/>
+  <path class="node-accent" d="M630 319 H760 L785 344 760 369 H630 L655 344Z"/>
+  <text class="step-small" x="708" y="344">Filter</text>
+  <path class="flow" d="M785 344 H810"/>
+  <path class="node" d="M810 319 H930 L955 344 930 369 H810 L835 344Z"/>
+  <text class="step-small" x="882" y="344">Read</text>
+  <path class="flow" d="M955 344 H980"/>
+  <path class="node" d="M980 319 H1100 L1125 344 1100 369 H980 L1005 344Z"/>
+  <text class="step-small" x="1052" y="344">Normalize</text>
+  <text class="hint" x="612" y="422">Prepare polar data for weighted comparison.</text>
+  <path class="flow" d="M1052 369 V510 H580 V612 H608"/>
+
+  <!-- Stage 4: weighting and decision -->
+  <rect class="panel" x="590" y="520" width="570" height="190" rx="8"/>
+  <text class="stage" x="612" y="550">04 / WEIGHT CONFIGURATION</text>
+  <line class="panel-rule" x1="612" y1="564" x2="1138" y2="564"/>
+  <path class="diamond" d="M650 578 692 612 650 646 608 612Z"/>
+  <text class="step-small" x="650" y="612">Validate</text>
+  <path class="flow" d="M692 612 H735"/>
+  <rect class="node" x="735" y="583" width="155" height="58" rx="8"/>
+  <text class="step-small" x="812" y="604">Setup Weight</text>
+  <text class="step-small" x="812" y="622">Config</text>
+  <path class="flow" d="M890 612 H920"/>
+  <rect class="node-accent" x="920" y="583" width="210" height="58" rx="26"/>
+  <text class="step-small" x="1025" y="604">Apply Weights</text>
+  <text class="step-small" x="1025" y="622">&amp; Store Data</text>
+  <path class="feedback" d="M650 646 V663 H812 V641"/>
+  <text class="loop-label" x="729" y="658" text-anchor="middle">Invalid setup · revise weights</text>
+  <text class="hint" x="612" y="691">Set criterion weights, validate them, then score each candidate airfoil.</text>
+
+  <!-- Decision and output -->
+  <rect class="panel" x="40" y="745" width="1120" height="130" rx="8"/>
+  <text class="stage" x="62" y="775">05 / SORTING AND DECISION</text>
+  <path class="flow" d="M1130 612 H1175 V755 H179 V790"/>
+  <path class="node" d="M95 790 H245 L263 815 245 840 H95 L113 815Z"/>
+  <text class="step-small" x="179" y="815">Generate Plots</text>
+  <path class="flow" d="M263 815 H310"/>
+  <path class="node" d="M310 790 H410 L428 815 410 840 H310 L328 815Z"/>
+  <text class="step-small" x="369" y="815">Sort</text>
+  <path class="flow" d="M428 815 H475"/>
+  <rect class="node" x="475" y="790" width="135" height="50" rx="8"/>
+  <text class="step-small" x="542" y="815">Read Data</text>
+  <path class="flow" d="M610 815 H657"/>
+  <path class="node-accent" d="M657 790 H830 L848 815 830 840 H657 L675 815Z"/>
+  <text class="step-small" x="752" y="806">Output Optimum</text>
+  <text class="step-small" x="752" y="824">Airfoil</text>
+  <path class="flow" d="M848 815 H895"/>
+  <path class="data-node" d="M895 790 H1035 Q1070 790 1070 815 T1035 840 H895Z"/>
+  <text class="step-small" x="981" y="806">Store Airfoil</text>
+  <text class="step-small" x="981" y="824">Data</text>
+
+  <text class="caption" x="600" y="905">AIRFOIL PERFORMANCE WORKFLOW</text>
+</svg>

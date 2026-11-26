@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 100" role="img" aria-label="Claude">
+  <g stroke="#e3a26f" stroke-width="4" stroke-linecap="round">
+    <path d="M36 12v13M36 75v13M5 50h13M54 50h13M14 28l9 9M49 63l9 9M58 28l-9 9M23 63l-9 9"/>
+  </g>
+  <text x="82" y="65" fill="#f0e9dd" font-family="Georgia, serif" font-size="48" letter-spacing="-1">Claude</text>
+</svg>
