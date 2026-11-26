@@ -1250,7 +1250,8 @@ function installCoreSkillDeck() {
     panels.forEach((item) => {
       const active = item === panel;
       item.classList.toggle("is-active", active);
-      item.querySelector(".profile-skill-trigger")?.setAttribute("aria-expanded", String(active));
+      const trigger = item.querySelector(".profile-skill-trigger");
+      if (trigger?.tagName === "BUTTON") trigger.setAttribute("aria-expanded", String(active));
     });
   };
 
@@ -1295,15 +1296,57 @@ function installCoreSkillDeck() {
   deck.addEventListener("click", (event) => {
     const panel = event.target.closest(".profile-skill-panel");
     if (!panel) return;
+    const sectionTarget = { cad: "drawings", python: "teaching", cfd: "cfd-simulation" }[panel.dataset.skillArt];
+    if (sectionTarget && !event.target.closest("a")) {
+      window.location.hash = sectionTarget;
+      return;
+    }
     pinnedPanel = panel;
     activate(panel);
   });
 }
 
+function installCoreSkillBackgroundSlideshow() {
+  const background = document.querySelector('[data-skill-art="cad"] .profile-skill-background');
+  if (!background) return;
+
+  const slides = Array.from(background.querySelectorAll("img"));
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  if (slides.length < 2) return;
+
+  let activeIndex = Math.max(0, slides.findIndex((slide) => slide.classList.contains("is-active")));
+  let timer = 0;
+  const stop = () => {
+    window.clearInterval(timer);
+    timer = 0;
+  };
+  const start = () => {
+    stop();
+    if (document.visibilityState === "hidden" || reducedMotion.matches) return;
+    timer = window.setInterval(() => {
+      slides[activeIndex].classList.remove("is-active");
+      activeIndex = (activeIndex + 1) % slides.length;
+      slides[activeIndex].classList.add("is-active");
+    }, 5000);
+  };
+
+  document.addEventListener("visibilitychange", start);
+  reducedMotion.addEventListener?.("change", start);
+  start();
+}
+
+installCoreSkillBackgroundSlideshow();
 installCoreSkillDeck();
 function installParticleDriftBackground() {
-  const section = document.querySelector(".python-projects-section");
-  const canvas = section?.querySelector(".particle-drift-canvas");
+  [document.querySelector(".python-projects-section"), document.querySelector('[data-skill-art="python"]')]
+    .filter(Boolean)
+    .forEach((host) => {
+      const canvas = host.querySelector(".particle-drift-canvas");
+      if (canvas) installParticleDriftBackgroundOn(host, canvas);
+    });
+}
+
+function installParticleDriftBackgroundOn(section, canvas) {
   if (!section || !canvas) return;
 
   const context = canvas.getContext("2d", { alpha: true });
@@ -1474,8 +1517,15 @@ function installParticleDriftBackground() {
 
 installParticleDriftBackground();
 function installFlowFieldBackground() {
-  const section = document.querySelector(".waves-background-section");
-  const canvas = section?.querySelector(".flow-field-canvas");
+  [document.querySelector(".waves-background-section"), document.querySelector('[data-skill-art="cfd"]')]
+    .filter(Boolean)
+    .forEach((host) => {
+      const canvas = host.querySelector(".flow-field-canvas");
+      if (canvas) installFlowFieldBackgroundOn(host, canvas);
+    });
+}
+
+function installFlowFieldBackgroundOn(section, canvas) {
   if (!section || !canvas) return;
 
   const context = canvas.getContext("2d", { alpha: true });
@@ -1631,13 +1681,13 @@ function installFlowFieldBackground() {
     mouse.active = false;
   };
 
-  canvas.addEventListener("pointermove", (event) => {
-    const bounds = canvas.getBoundingClientRect();
+  section.addEventListener("pointermove", (event) => {
+    const bounds = section.getBoundingClientRect();
     mouse.x = event.clientX - bounds.left;
     mouse.y = event.clientY - bounds.top;
     mouse.active = true;
   }, { passive: true });
-  canvas.addEventListener("pointerleave", () => { mouse.active = false; });
+  section.addEventListener("pointerleave", () => { mouse.active = false; });
   window.addEventListener("resize", resize, { passive: true });
   resize();
 
@@ -1813,3 +1863,235 @@ document.querySelector("#open-fulcrum").addEventListener("click", () => {
 });
 
 window.addEventListener("pagehide", disposeComparison);
+
+function installWritingConstellationBackground() {
+  const panel = document.querySelector('[data-skill-art="writing"]');
+  const canvas = panel?.querySelector(".writing-constellation-canvas");
+  if (!panel || !canvas) return;
+
+  const context = canvas.getContext("2d", { alpha: true });
+  if (!context) return;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const accent = "211, 239, 102";
+  let width = 1;
+  let height = 1;
+  let dpr = 1;
+  let nodes = [];
+  let frame = 0;
+  let lastFrame = 0;
+  let nearViewport = false;
+  const pointer = { x: -1000, y: -1000, active: false };
+
+  const resize = () => {
+    const bounds = panel.getBoundingClientRect();
+    width = Math.max(bounds.width, 1);
+    height = Math.max(bounds.height, 1);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    context.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.max(12, Math.min(48, Math.round((width * height) / 5200)));
+    nodes = Array.from({ length: count }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.34,
+      vy: (Math.random() - 0.5) * 0.34,
+      radius: Math.random() * 1.1 + 1.1,
+      phase: Math.random() * Math.PI * 2
+    }));
+  };
+
+  const draw = (timestamp) => {
+    if (reducedMotion.matches || document.hidden || !nearViewport) {
+      frame = 0;
+      return;
+    }
+    const step = lastFrame ? Math.min((timestamp - lastFrame) / 16.67, 2) : 1;
+    lastFrame = timestamp;
+    context.clearRect(0, 0, width, height);
+
+    nodes.forEach((node) => {
+      node.x += node.vx * step;
+      node.y += node.vy * step;
+      if (pointer.active) {
+        const dx = pointer.x - node.x;
+        const dy = pointer.y - node.y;
+        const distance = Math.hypot(dx, dy);
+        if (distance < 150 && distance > 0) {
+          const pull = (1 - distance / 150) * 0.035 * step;
+          node.x += dx * pull;
+          node.y += dy * pull;
+        }
+      }
+      if (node.x < 0 || node.x > width) node.vx *= -1;
+      if (node.y < 0 || node.y > height) node.vy *= -1;
+      node.x = Math.max(0, Math.min(width, node.x));
+      node.y = Math.max(0, Math.min(height, node.y));
+    });
+
+    context.lineWidth = 0.7;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        const first = nodes[i];
+        const second = nodes[j];
+        const distance = Math.hypot(first.x - second.x, first.y - second.y);
+        if (distance < 112) {
+          context.strokeStyle = `rgba(${accent}, ${0.22 * (1 - distance / 112)})`;
+          context.beginPath();
+          context.moveTo(first.x, first.y);
+          context.lineTo(second.x, second.y);
+          context.stroke();
+        }
+      }
+    }
+
+    nodes.forEach((node) => {
+      const pulse = 0.55 + Math.sin(timestamp * 0.001 + node.phase) * 0.2;
+      context.fillStyle = `rgba(${accent}, ${pulse * 0.22})`;
+      context.beginPath();
+      context.arc(node.x, node.y, node.radius * 2.6, 0, Math.PI * 2);
+      context.fill();
+      context.fillStyle = `rgba(${accent}, ${pulse})`;
+      context.beginPath();
+      context.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+      context.fill();
+    });
+
+    frame = window.requestAnimationFrame(draw);
+  };
+
+  const start = () => {
+    if (frame || reducedMotion.matches || document.hidden || !nearViewport) return;
+    lastFrame = 0;
+    frame = window.requestAnimationFrame(draw);
+  };
+  const stop = () => {
+    if (frame) window.cancelAnimationFrame(frame);
+    frame = 0;
+    lastFrame = 0;
+    pointer.active = false;
+  };
+
+  panel.addEventListener("pointermove", (event) => {
+    if (event.pointerType === "touch") return;
+    const bounds = panel.getBoundingClientRect();
+    pointer.x = event.clientX - bounds.left;
+    pointer.y = event.clientY - bounds.top;
+    pointer.active = true;
+  }, { passive: true });
+  panel.addEventListener("pointerleave", () => { pointer.active = false; });
+  panel.addEventListener("pointercancel", () => { pointer.active = false; });
+  window.addEventListener("resize", resize, { passive: true });
+  resize();
+
+  if ("ResizeObserver" in window) {
+    const resizeObserver = new ResizeObserver(resize);
+    resizeObserver.observe(panel);
+  }
+  if ("IntersectionObserver" in window) {
+    const intersectionObserver = new IntersectionObserver((entries) => {
+      nearViewport = entries.some((entry) => entry.isIntersecting);
+      if (nearViewport) start();
+      else stop();
+    }, { rootMargin: "160px 0px", threshold: 0 });
+    intersectionObserver.observe(panel);
+  } else {
+    nearViewport = true;
+  }
+
+  reducedMotion.addEventListener("change", () => {
+    if (reducedMotion.matches) {
+      stop();
+      context.clearRect(0, 0, width, height);
+    } else start();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) stop();
+    else start();
+  });
+  window.addEventListener("pagehide", stop);
+  window.addEventListener("pageshow", start);
+  if (nearViewport) start();
+}
+
+installWritingConstellationBackground();
+function installWebSkillBackgroundSlideshow() {
+  const panel = document.querySelector('[data-skill-art="web"]');
+  const background = panel?.querySelector("[data-lazy-slideshow]");
+  if (!panel || !background) return;
+
+  const slides = Array.from(background.querySelectorAll("img"));
+  if (slides.length < 2) return;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const loadPromises = new WeakMap();
+  let activeIndex = 0;
+  let timer = 0;
+  let generation = 0;
+
+  const loadSlide = (index) => {
+    const image = slides[index];
+    if (image.complete && image.naturalWidth > 0) return Promise.resolve(true);
+    if (loadPromises.has(image)) return loadPromises.get(image);
+
+    const loadPromise = new Promise((resolve) => {
+      image.addEventListener("load", () => resolve(true), { once: true });
+      image.addEventListener("error", () => resolve(false), { once: true });
+      image.src = image.dataset.src;
+      if (image.complete) resolve(image.naturalWidth > 0);
+    });
+    loadPromises.set(image, loadPromise);
+    return loadPromise;
+  };
+
+  const showSlide = (index) => {
+    activeIndex = index;
+    slides.forEach((image, imageIndex) => image.classList.toggle("is-active", imageIndex === index));
+  };
+  const stop = () => {
+    generation += 1;
+    window.clearTimeout(timer);
+    timer = 0;
+  };
+  const scheduleNext = (runId) => {
+    if (reducedMotion.matches || !panel.classList.contains("is-active") || document.hidden) return;
+    timer = window.setTimeout(async () => {
+      const nextIndex = (activeIndex + 1) % slides.length;
+      const loaded = await loadSlide(nextIndex);
+      if (runId !== generation || !panel.classList.contains("is-active") || document.hidden) return;
+      if (loaded) showSlide(nextIndex);
+      void loadSlide((activeIndex + 1) % slides.length);
+      scheduleNext(runId);
+    }, 5000);
+  };
+  const start = async () => {
+    stop();
+    if (!panel.classList.contains("is-active") || document.hidden) return;
+    if (reducedMotion.matches) activeIndex = 0;
+    const runId = ++generation;
+    const loaded = await loadSlide(activeIndex);
+    if (runId !== generation || !panel.classList.contains("is-active") || document.hidden) return;
+    if (loaded) showSlide(activeIndex);
+    if (reducedMotion.matches) return;
+    void loadSlide((activeIndex + 1) % slides.length);
+    scheduleNext(runId);
+  };
+  const syncPanelState = () => {
+    if (panel.classList.contains("is-active") && !document.hidden) void start();
+    else {
+      stop();
+      if (reducedMotion.matches && !document.hidden) {
+        void loadSlide(0).then((loaded) => {
+          if (loaded && reducedMotion.matches && !panel.classList.contains("is-active")) showSlide(0);
+        });
+      }
+    }
+  };
+
+  const panelObserver = new MutationObserver(syncPanelState);
+  panelObserver.observe(panel, { attributes: true, attributeFilter: ["class"] });
+  document.addEventListener("visibilitychange", syncPanelState);
+  reducedMotion.addEventListener("change", syncPanelState);
+  syncPanelState();
+}
+
+installWebSkillBackgroundSlideshow();
